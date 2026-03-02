@@ -33,8 +33,8 @@ class CaeAudioManager(private val context: Context) {
         private const val PCM_DEVICE = 0
         private const val PCM_CHANNELS = 8      // 8ch as reported by /proc/asound/card2/stream0
         private const val PCM_SAMPLE_RATE = 16000
-        private const val PCM_PERIOD_SIZE = 1536
-        private const val PCM_PERIOD_COUNT = 8
+        private const val PCM_PERIOD_SIZE = 1024
+        private const val PCM_PERIOD_COUNT = 4
         private const val PCM_FORMAT = 0        // PCM_FORMAT_S16_LE
 
         // WebSocket message types (must match Python server)
@@ -119,22 +119,6 @@ class CaeAudioManager(private val context: Context) {
             }
 
             caeCoreHelper = CaeCoreHelper(caeListener, false) // false = not 2-mic mode
-
-            // Kill audioserver to release the ALSA device — it auto-restarts
-            // but by then we already hold the lock
-            try {
-                val process = Runtime.getRuntime().exec(arrayOf("su", "0", "sh", "-c",
-                    "pid=\$(cat /proc/*/cmdline 2>/dev/null | tr '\\0' '\\n' | grep -n audioserver | head -1 | cut -d: -f1); " +
-                    "for p in /proc/[0-9]*/cmdline; do " +
-                    "if tr '\\0' ' ' < \$p 2>/dev/null | grep -q audioserver; then " +
-                    "kill \$(echo \$p | grep -o '[0-9]*'); fi; done"
-                ))
-                process.waitFor()
-                Thread.sleep(500) // Wait for audioserver to die and release the device
-                Log.i(TAG, "Killed audioserver to release ALSA device")
-            } catch (e: Exception) {
-                Log.w(TAG, "Could not kill audioserver: ${e.message}")
-            }
 
             // Create ALSA recorder instance for USB mic array
             alsaRecorder = AlsaRecorder.createInstance(
