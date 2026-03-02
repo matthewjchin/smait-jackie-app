@@ -194,41 +194,41 @@ class CaeAudioManager(private val context: Context) {
             val inOff = j * 16   // input offset
             val outOff = j * 24  // output offset
 
-            // Mic 1 (Ch 0 - FL)
-            output[outOff + 0] = 0x00
-            output[outOff + 1] = 0x01
-            output[outOff + 2] = data[inOff + 0]
-            output[outOff + 3] = data[inOff + 1]
+            // Mic 1 (Ch 0 - FL) — format: [pcm_low, pcm_high, channel_id, 0x00]
+            output[outOff + 0] = data[inOff + 0]
+            output[outOff + 1] = data[inOff + 1]
+            output[outOff + 2] = 0x01
+            output[outOff + 3] = 0x00
 
             // Mic 2 (Ch 1 - FR)
-            output[outOff + 4] = 0x00
-            output[outOff + 5] = 0x02
-            output[outOff + 6] = data[inOff + 2]
-            output[outOff + 7] = data[inOff + 3]
+            output[outOff + 4] = data[inOff + 2]
+            output[outOff + 5] = data[inOff + 3]
+            output[outOff + 6] = 0x02
+            output[outOff + 7] = 0x00
 
             // Mic 3 (Ch 2 - FC)
-            output[outOff + 8] = 0x00
-            output[outOff + 9] = 0x03
-            output[outOff + 10] = data[inOff + 4]
-            output[outOff + 11] = data[inOff + 5]
+            output[outOff + 8] = data[inOff + 4]
+            output[outOff + 9] = data[inOff + 5]
+            output[outOff + 10] = 0x03
+            output[outOff + 11] = 0x00
 
             // Mic 4 (Ch 3 - LFE)
-            output[outOff + 12] = 0x00
-            output[outOff + 13] = 0x04
-            output[outOff + 14] = data[inOff + 6]
-            output[outOff + 15] = data[inOff + 7]
+            output[outOff + 12] = data[inOff + 6]
+            output[outOff + 13] = data[inOff + 7]
+            output[outOff + 14] = 0x04
+            output[outOff + 15] = 0x00
 
             // Ref 1 (Ch 6 - FLC)
-            output[outOff + 16] = 0x00
-            output[outOff + 17] = 0x05
-            output[outOff + 18] = data[inOff + 12]
-            output[outOff + 19] = data[inOff + 13]
+            output[outOff + 16] = data[inOff + 12]
+            output[outOff + 17] = data[inOff + 13]
+            output[outOff + 18] = 0x05
+            output[outOff + 19] = 0x00
 
             // Ref 2 (Ch 7 - FRC)
-            output[outOff + 20] = 0x00
-            output[outOff + 21] = 0x06
-            output[outOff + 22] = data[inOff + 14]
-            output[outOff + 23] = data[inOff + 15]
+            output[outOff + 20] = data[inOff + 14]
+            output[outOff + 21] = data[inOff + 15]
+            output[outOff + 22] = 0x06
+            output[outOff + 23] = 0x00
         }
 
         return output
