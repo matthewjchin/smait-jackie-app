@@ -72,7 +72,7 @@
                 android:elevation="4dp" />
         </FrameLayout>
 
-        <!-- Center content -->
+        <!-- Center content — Event Welcome Screen -->
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -80,30 +80,92 @@
             android:orientation="vertical"
             android:gravity="center">
 
+            <!-- "Welcome to the" -->
             <TextView
-                android:id="@+id/jackieTitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/jackie_title"
-                android:textColor="@color/text_primary"
-                android:textSize="120sp"
-                android:fontFamily="sans-serif-thin"
+                android:text="@string/welcome_prefix"
+                android:textColor="@color/text_muted"
+                android:textSize="18sp"
+                android:fontFamily="sans-serif-light"
                 android:letterSpacing="0.2"
+                android:layout_marginBottom="8dp" />
+
+            <!-- "AI Center for" -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/event_title_line1"
+                android:textColor="@color/text_primary"
+                android:textSize="64sp"
+                android:fontFamily="sans-serif-thin"
+                android:letterSpacing="0.05"
+                android:gravity="center"
                 android:shadowColor="#220066FF"
                 android:shadowDx="0"
                 android:shadowDy="0"
                 android:shadowRadius="20" />
 
+            <!-- "Civic & Social Good" -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/event_title_line2"
+                android:textColor="@color/text_primary"
+                android:textSize="64sp"
+                android:fontFamily="sans-serif-thin"
+                android:letterSpacing="0.05"
+                android:gravity="center"
+                android:layout_marginBottom="20dp"
+                android:shadowColor="#220066FF"
+                android:shadowDx="0"
+                android:shadowDy="0"
+                android:shadowRadius="20" />
+
+            <!-- Grand Opening badge -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/event_badge"
+                android:textColor="@color/accent_blue"
+                android:textSize="15sp"
+                android:fontFamily="sans-serif-medium"
+                android:letterSpacing="0.25"
+                android:layout_marginBottom="20dp" />
+
+            <!-- Thin divider -->
+            <View
+                android:layout_width="120dp"
+                android:layout_height="1dp"
+                android:background="@color/text_muted"
+                android:alpha="0.4"
+                android:layout_marginBottom="20dp" />
+
+            <!-- Animated approach prompt -->
             <TextView
                 android:id="@+id/approachText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
                 android:text="@string/approach_message"
                 android:textColor="@color/text_secondary"
-                android:textSize="28sp"
+                android:textSize="24sp"
                 android:fontFamily="sans-serif-light"
-                android:letterSpacing="0.05" />
+                android:letterSpacing="0.05"
+                android:gravity="center" />
+
+            <!-- Jackie subtitle — hidden ref kept for code compatibility -->
+            <TextView
+                android:id="@+id/jackieTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/jackie_subtitle"
+                android:textColor="@color/text_muted"
+                android:textSize="13sp"
+                android:fontFamily="sans-serif-light"
+                android:letterSpacing="0.08"
+                android:layout_marginTop="6dp"
+                android:gravity="center" />
+
         </LinearLayout>
 
         <!-- Wave visualization at bottom -->

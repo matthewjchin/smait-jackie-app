@@ -1,7 +1,12 @@
 <resources>
     <string name="app_name">Jackie</string>
     <string name="jackie_title">Jackie</string>
-    <string name="approach_message">Step up and say hi — Grand Opening! 🎉</string>
+    <string name="welcome_prefix">Welcome to the</string>
+    <string name="event_title_line1">AI Center for</string>
+    <string name="event_title_line2">Civic &amp; Social Good</string>
+    <string name="event_badge">✦  GRAND OPENING  ✦</string>
+    <string name="approach_message">Step up and say hi!</string>
+    <string name="jackie_subtitle">Meet Jackie — your AI companion for today</string>
     <string name="powered_by">AI Center for Civic &amp; Social Good Grand Opening  •  BioRob Lab  •  SJSU</string>
     <string name="settings_title">Connection Settings</string>
     <string name="server_ip">Server IP</string>
