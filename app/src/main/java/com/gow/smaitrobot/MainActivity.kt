@@ -165,6 +165,7 @@ class MainActivity : AppCompatActivity() {
 
     // ─── Selfie ───
     private var selfieBitmap: Bitmap? = null
+    private var selfieCountdownTimer: CountDownTimer? = null
 
     // ─── Session Timer ───
     private var sessionStartTime = 0L
@@ -1196,6 +1197,16 @@ class MainActivity : AppCompatActivity() {
     // ═══════════════════════════════════════════════════════════════
 
     private fun startSelfieCountdown() {
+        // Cancel any in-progress countdown before starting a new one
+        selfieCountdownTimer?.cancel()
+        selfieCountdownTimer = null
+
+        // Reset all selfie views to clean state
+        selfiePreviewCard.clearAnimation()
+        selfieActions.clearAnimation()
+        countdownText.clearAnimation()
+        selfieBitmap = null
+
         selfieOverlay.visibility = View.VISIBLE
         selfieOverlay.alpha = 0f
         selfieOverlay.animate().alpha(1f).setDuration(200).start()
@@ -1205,7 +1216,7 @@ class MainActivity : AppCompatActivity() {
         countdownText.visibility = View.VISIBLE
         flashOverlay.visibility = View.GONE
 
-        object : CountDownTimer(3500, 1000) {
+        selfieCountdownTimer = object : CountDownTimer(3500, 1000) {
             override fun onTick(millisUntilFinished: Long) {
                 val sec = (millisUntilFinished / 1000).toInt() + 1
                 if (sec <= 3) {
@@ -1224,6 +1235,7 @@ class MainActivity : AppCompatActivity() {
             }
 
             override fun onFinish() {
+                selfieCountdownTimer = null
                 countdownText.visibility = View.GONE
                 // Flash effect
                 flashOverlay.visibility = View.VISIBLE
@@ -1236,7 +1248,7 @@ class MainActivity : AppCompatActivity() {
                     }.start()
                 capturePhoto()
             }
-        }.start()
+        }.also { it.start() }
     }
 
     private fun capturePhoto() {
@@ -1291,12 +1303,27 @@ class MainActivity : AppCompatActivity() {
         } catch (e: Exception) {
             Log.e(TAG, "Failed to save selfie", e)
         }
-        // Animate out
+        dismissSelfieOverlay()
+    }
+
+    private fun dismissSelfieOverlay() {
+        // Cancel any pending countdown
+        selfieCountdownTimer?.cancel()
+        selfieCountdownTimer = null
+        selfieBitmap = null
+
+        // Clear animations to prevent stuck state
+        selfieOverlay.clearAnimation()
+        selfiePreviewCard.clearAnimation()
+        selfieActions.clearAnimation()
+        countdownText.clearAnimation()
+
         selfieOverlay.animate()
             .alpha(0f)
             .setDuration(250)
             .withEndAction {
                 selfieOverlay.visibility = View.GONE
+                selfieOverlay.alpha = 1f  // Reset for next use
             }.start()
     }
 
@@ -1323,6 +1350,7 @@ class MainActivity : AppCompatActivity() {
         tts?.shutdown()
         stopStreaming()
         stopSessionTimer()
+        selfieCountdownTimer?.cancel()
         captureSession?.close()
         cameraDevice?.close()
         imageReader?.close()
