@@ -22,8 +22,11 @@ import android.hardware.camera2.CameraCharacteristics
 import android.hardware.camera2.CameraDevice
 import android.hardware.camera2.CameraManager
 import android.hardware.camera2.CaptureRequest
+import android.media.AudioFormat
+import android.media.AudioRecord
 import android.media.Image
 import android.media.ImageReader
+import android.media.MediaRecorder
 import android.os.Bundle
 import android.os.CountDownTimer
 import android.os.Environment
@@ -44,7 +47,6 @@ import android.view.animation.DecelerateInterpolator
 import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.LinearLayout
-import android.widget.SeekBar
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -74,6 +76,9 @@ class MainActivity : AppCompatActivity() {
     companion object {
         private const val TAG = "Jackie"
         private const val PERMISSION_REQUEST_CODE = 100
+        private const val SAMPLE_RATE = 16000
+        private const val CHANNEL_CONFIG = AudioFormat.CHANNEL_IN_MONO
+        private const val AUDIO_FORMAT = AudioFormat.ENCODING_PCM_16BIT
         private const val INITIAL_RECONNECT_DELAY_MS = 1000L
         private const val MAX_RECONNECT_DELAY_MS = 30000L
         private const val AUDIO_TYPE: Byte = 0x01
@@ -118,15 +123,6 @@ class MainActivity : AppCompatActivity() {
     private lateinit var settingsPortInput: TextInputEditText
     private lateinit var settingsSheet: LinearLayout
 
-    // Config panel
-    private lateinit var configOverlay: FrameLayout
-    private lateinit var vadSeekBar: SeekBar
-    private lateinit var asdSeekBar: SeekBar
-    private lateinit var timeoutSeekBar: SeekBar
-    private lateinit var vadLabel: TextView
-    private lateinit var asdLabel: TextView
-    private lateinit var timeoutLabel: TextView
-
     // ─── State ───
     private enum class AppState { IDLE, ENGAGED }
     private var currentState = AppState.IDLE
@@ -155,8 +151,9 @@ class MainActivity : AppCompatActivity() {
     private lateinit var cameraThread: HandlerThread
     private var lastJpegBytes: ByteArray? = null
 
-    // ─── Audio (CAE Beamforming) ───
-    private lateinit var caeAudio: CaeAudioManager
+    // ─── Audio ───
+    private var audioRecord: AudioRecord? = null
+    private var audioThread: Thread? = null
 
     // ─── TTS ───
     private var tts: TextToSpeech? = null
@@ -166,8 +163,6 @@ class MainActivity : AppCompatActivity() {
 
     // ─── Selfie ───
     private var selfieBitmap: Bitmap? = null
-    private val selfieHandler = android.os.Handler(android.os.Looper.getMainLooper())
-    private val selfieAutoDismiss = Runnable { dismissSelfie() }
 
     // ─── Session Timer ───
     private var sessionStartTime = 0L
@@ -179,24 +174,6 @@ class MainActivity : AppCompatActivity() {
                 val sec = elapsed % 60
                 sessionTimer.text = String.format("%d:%02d", min, sec)
                 mainHandler.postDelayed(this, 1000)
-            }
-        }
-    }
-
-    // ─── Session Watchdog (auto-return to idle if server doesn't notify) ───
-    private var lastActivityTime = 0L
-    private var configuredSessionTimeoutMs = 30_000L  // mirrors config slider default (30s)
-    private val WATCHDOG_GRACE_MS = 15_000L           // extra grace on top of configured timeout
-    private val sessionWatchdogRunnable = object : Runnable {
-        override fun run() {
-            if (currentState != AppState.ENGAGED) return
-            val sinceActivity = System.currentTimeMillis() - lastActivityTime
-            if (lastActivityTime > 0 && sinceActivity > configuredSessionTimeoutMs + WATCHDOG_GRACE_MS) {
-                Log.i(TAG, "Watchdog: no activity for ${sinceActivity}ms — returning to idle")
-                switchToState(AppState.IDLE)
-                clearChat()
-            } else {
-                mainHandler.postDelayed(this, 5_000)
             }
         }
     }
@@ -232,8 +209,6 @@ class MainActivity : AppCompatActivity() {
         )
 
         prefs = getSharedPreferences("jackie_prefs", Context.MODE_PRIVATE)
-        caeAudio = CaeAudioManager(this)
-        caeAudio.copyAssetsIfNeeded()
         initUI()
         initTTS()
         initChat()
@@ -322,65 +297,10 @@ class MainActivity : AppCompatActivity() {
         settingsOverlay.setOnClickListener { hideSettings() }
         settingsSheet.setOnClickListener { /* consume click */ }
 
-        // Config panel
-        configOverlay = findViewById(R.id.configOverlay)
-        vadSeekBar = findViewById(R.id.vadSeekBar)
-        asdSeekBar = findViewById(R.id.asdSeekBar)
-        timeoutSeekBar = findViewById(R.id.timeoutSeekBar)
-        vadLabel = findViewById(R.id.vadLabel)
-        asdLabel = findViewById(R.id.asdLabel)
-        timeoutLabel = findViewById(R.id.timeoutLabel)
-
-        // Gear button
-        findViewById<TextView>(R.id.gearButton).setOnClickListener { showConfigPanel() }
-
-        // Config overlay dismiss
-        configOverlay.setOnClickListener { configOverlay.visibility = View.GONE }
-        findViewById<LinearLayout>(R.id.configSheet).setOnClickListener { /* consume */ }
-
-        // SeekBar listeners: VAD range 0.3–0.9, step 0.01, max=60, progress=(val-0.3)*100
-        vadSeekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
-            override fun onProgressChanged(sb: SeekBar?, progress: Int, fromUser: Boolean) {
-                val value = 0.3f + progress / 100f
-                vadLabel.text = "Noise Sensitivity (VAD): %.2f".format(value)
-            }
-            override fun onStartTrackingTouch(sb: SeekBar?) {}
-            override fun onStopTrackingTouch(sb: SeekBar?) {}
-        })
-
-        // ASD range 0.10–0.50, step 0.05, max=8, progress=(val-0.10)/0.05
-        asdSeekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
-            override fun onProgressChanged(sb: SeekBar?, progress: Int, fromUser: Boolean) {
-                val value = 0.10f + progress * 0.05f
-                asdLabel.text = "Speaker Strictness (ASD): %.2f".format(value)
-            }
-            override fun onStartTrackingTouch(sb: SeekBar?) {}
-            override fun onStopTrackingTouch(sb: SeekBar?) {}
-        })
-
-        // Timeout range 10–60, max=50, progress=val-10
-        timeoutSeekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
-            override fun onProgressChanged(sb: SeekBar?, progress: Int, fromUser: Boolean) {
-                val value = 10 + progress
-                timeoutLabel.text = "Session Timeout: ${value}s"
-            }
-            override fun onStartTrackingTouch(sb: SeekBar?) {}
-            override fun onStopTrackingTouch(sb: SeekBar?) {}
-        })
-
-        // Apply button
-        findViewById<MaterialButton>(R.id.configApplyButton).setOnClickListener { applyConfig() }
-
         // Selfie buttons
         selfieButton.setOnClickListener { startSelfieCountdown() }
-        retakeButton.setOnClickListener {
-            selfieHandler.removeCallbacks(selfieAutoDismiss)
-            startSelfieCountdown()
-        }
+        retakeButton.setOnClickListener { startSelfieCountdown() }
         saveButton.setOnClickListener { saveSelfie() }
-        // Tap overlay background (outside card) to dismiss
-        selfieOverlay.setOnClickListener { dismissSelfie() }
-        selfiePreviewCard.setOnClickListener { /* consume — don't dismiss when tapping card */ }
 
         // Camera preview
         cameraPreview.surfaceTextureListener = object : TextureView.SurfaceTextureListener {
@@ -670,17 +590,13 @@ class MainActivity : AppCompatActivity() {
 
     private fun startSessionTimer() {
         sessionStartTime = System.currentTimeMillis()
-        lastActivityTime = System.currentTimeMillis()
         sessionTimer.text = "0:00"
         mainHandler.post(timerRunnable)
-        mainHandler.postDelayed(sessionWatchdogRunnable, configuredSessionTimeoutMs + WATCHDOG_GRACE_MS)
     }
 
     private fun stopSessionTimer() {
         sessionStartTime = 0
-        lastActivityTime = 0
         mainHandler.removeCallbacks(timerRunnable)
-        mainHandler.removeCallbacks(sessionWatchdogRunnable)
     }
 
     // ═══════════════════════════════════════════════════════════════
@@ -721,41 +637,6 @@ class MainActivity : AppCompatActivity() {
             .putString("server_ip", settingsIpInput.text.toString())
             .putString("server_port", settingsPortInput.text.toString())
             .apply()
-    }
-
-    // ═══════════════════════════════════════════════════════════════
-    // CONFIG PANEL (Live Tuning)
-    // ═══════════════════════════════════════════════════════════════
-
-    private fun showConfigPanel() {
-        configOverlay.visibility = View.VISIBLE
-        configOverlay.alpha = 0f
-        configOverlay.animate().alpha(1f).setDuration(200).start()
-    }
-
-    private fun applyConfig() {
-        val vadValue = 0.3f + vadSeekBar.progress / 100f
-        val asdValue = 0.10f + asdSeekBar.progress * 0.05f
-        val timeoutValue = 10 + timeoutSeekBar.progress
-
-        // Keep client-side watchdog in sync with server timeout
-        configuredSessionTimeoutMs = timeoutValue * 1000L
-
-        val json = JSONObject().apply {
-            put("type", "config")
-            put("vad_threshold", vadValue.toDouble())
-            put("asd_min_score", asdValue.toDouble())
-            put("session_timeout", timeoutValue)
-        }
-
-        webSocket?.send(json.toString())
-        Log.i(TAG, "Config sent: $json")
-
-        configOverlay.animate()
-            .alpha(0f)
-            .setDuration(200)
-            .withEndAction { configOverlay.visibility = View.GONE }
-            .start()
     }
 
     // ═══════════════════════════════════════════════════════════════
@@ -1013,14 +894,40 @@ class MainActivity : AppCompatActivity() {
     // ═══════════════════════════════════════════════════════════════
 
     private fun startAudioCapture() {
-        webSocket?.let { ws ->
-            caeAudio.start(ws)
-            Log.i(TAG, "CAE beamformed audio capture started")
-        }
+        val bufferSize = AudioRecord.getMinBufferSize(SAMPLE_RATE, CHANNEL_CONFIG, AUDIO_FORMAT)
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) return
+
+        audioRecord = AudioRecord(
+            MediaRecorder.AudioSource.VOICE_COMMUNICATION, // enables hardware AEC (echo cancel)
+            SAMPLE_RATE,
+            CHANNEL_CONFIG,
+            AUDIO_FORMAT,
+            bufferSize * 2
+        )
+        audioRecord?.startRecording()
+
+        audioThread = Thread {
+            val buffer = ByteArray(bufferSize)
+            while (isStreaming.get()) {
+                val read = audioRecord?.read(buffer, 0, buffer.size) ?: 0
+                if (read > 0) {
+                    val frame = ByteArray(1 + read)
+                    frame[0] = AUDIO_TYPE
+                    System.arraycopy(buffer, 0, frame, 1, read)
+                    webSocket?.send(frame.toByteString(0, frame.size))
+                }
+            }
+        }.also { it.start() }
     }
 
     private fun stopAudioCapture() {
-        caeAudio.stop()
+        audioThread?.interrupt()
+        audioThread = null
+        try {
+            audioRecord?.stop()
+            audioRecord?.release()
+        } catch (_: Exception) {}
+        audioRecord = null
     }
 
     // ═══════════════════════════════════════════════════════════════
@@ -1129,7 +1036,6 @@ class MainActivity : AppCompatActivity() {
                 "transcript" -> {
                     val msg = json.getString("text")
                     val speaker = json.optString("speaker", "user")
-                    lastActivityTime = System.currentTimeMillis()
                     addChatMessage(msg, speaker == "user")
                 }
                 "state" -> {
@@ -1140,7 +1046,6 @@ class MainActivity : AppCompatActivity() {
                             clearChat()
                         }
                         "engaged", "active" -> {
-                            lastActivityTime = System.currentTimeMillis()
                             switchToState(AppState.ENGAGED)
                         }
                     }
@@ -1161,14 +1066,6 @@ class MainActivity : AppCompatActivity() {
                     val respText = json.getString("text")
                     addChatMessage(respText, false)
                     speakText(respText)
-                }
-                "config_ack" -> {
-                    Log.i(TAG, "Config acknowledged by server")
-                }
-                "session_end", "session_ended" -> {
-                    Log.i(TAG, "Session ended by server — returning to idle")
-                    switchToState(AppState.IDLE)
-                    clearChat()
                 }
                 "user_name" -> {
                     val name = json.getString("name")
@@ -1263,10 +1160,6 @@ class MainActivity : AppCompatActivity() {
         selfieActions.visibility = View.VISIBLE
         selfieActions.alpha = 0f
         selfieActions.animate().alpha(1f).setStartDelay(200).setDuration(200).start()
-
-        // Auto-dismiss after 8s so robot never stays frozen on selfie screen
-        selfieHandler.removeCallbacks(selfieAutoDismiss)
-        selfieHandler.postDelayed(selfieAutoDismiss, 8000)
     }
 
     private fun saveSelfie() {
@@ -1287,21 +1180,12 @@ class MainActivity : AppCompatActivity() {
         } catch (e: Exception) {
             Log.e(TAG, "Failed to save selfie", e)
         }
-        dismissSelfie()
-    }
-
-    private fun dismissSelfie() {
-        selfieHandler.removeCallbacks(selfieAutoDismiss)
-        selfieOverlay.animate().cancel()
+        // Animate out
         selfieOverlay.animate()
             .alpha(0f)
             .setDuration(250)
             .withEndAction {
                 selfieOverlay.visibility = View.GONE
-                selfieOverlay.alpha = 1f          // reset for next time
-                selfiePreviewCard.visibility = View.GONE
-                selfieActions.visibility = View.GONE
-                selfieBitmap = null
             }.start()
     }
 
@@ -1335,6 +1219,5 @@ class MainActivity : AppCompatActivity() {
         animators.forEach { it.cancel() }
         particleAnimator?.cancel()
         statusDotAnimator?.cancel()
-        selfieHandler.removeCallbacks(selfieAutoDismiss)
     }
 }
