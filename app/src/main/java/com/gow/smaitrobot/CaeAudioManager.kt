@@ -174,45 +174,36 @@ class CaeAudioManager(private val context: Context) {
     }
 
     /**
-     * Adapt 8-channel 16-bit PCM to 6-channel 32-bit format expected by CAE engine.
+     * Adapt 8-channel 16-bit PCM to 6-channel 16-bit interleaved for CAE engine.
      *
      * Input:  8 channels × 2 bytes = 16 bytes per frame (interleaved S16_LE)
-     * Output: 6 channels × 4 bytes = 24 bytes per frame (interleaved S32_LE)
+     * Output: 6 channels × 2 bytes = 12 bytes per frame (interleaved S16_LE)
      *
      * Channel mapping (USB Audio → CAE):
-     *   Ch 0 (FL)  → Mic 1  (position 0)
-     *   Ch 1 (FR)  → Mic 2  (position 1)
-     *   Ch 2 (FC)  → Mic 3  (position 2)
-     *   Ch 3 (LFE) → Mic 4  (position 3)
-     *   Ch 6 (FLC) → Ref 1  (position 4)
-     *   Ch 7 (FRC) → Ref 2  (position 5)
+     *   Ch 0 (FL)  → Mic 1
+     *   Ch 1 (FR)  → Mic 2
+     *   Ch 2 (FC)  → Mic 3
+     *   Ch 3 (LFE) → Mic 4
+     *   Ch 6 (FLC) → Ref 1
+     *   Ch 7 (FRC) → Ref 2
      *
-     * 16-bit → 32-bit conversion: left-shift by 16 (standard bit-depth promotion).
-     * In LE bytes: 16-bit [lo, hi] → 32-bit [0x00, 0x00, lo, hi]
-     * No channel IDs — CAE identifies channels by interleaved position.
+     * Trying raw 16-bit — some CAE SDK builds accept S16 despite docs saying S32.
      */
     private fun adapt8ch16bitTo6ch32bit(data: ByteArray): ByteArray {
         val framesCount = data.size / 16  // 16 bytes per 8ch frame
-        val output = ByteArray(framesCount * 24) // 24 bytes per 6ch frame
+        val output = ByteArray(framesCount * 12) // 12 bytes per 6ch frame (16-bit)
 
-        // Source channel byte offsets within a 16-byte input frame (each ch = 2 bytes)
-        // Ch0=0, Ch1=2, Ch2=4, Ch3=6, Ch6=12, Ch7=14
         val srcOffsets = intArrayOf(0, 2, 4, 6, 12, 14)
 
         for (j in 0 until framesCount) {
             val inOff = j * 16
-            val outOff = j * 24
+            val outOff = j * 12
 
             for (ch in 0 until 6) {
                 val sOff = inOff + srcOffsets[ch]
-                val dOff = outOff + ch * 4
-                // 32-bit LE sign-extension: 16-bit [lo, hi] → 32-bit [lo, hi, sign, sign]
-                // Sign byte = 0xFF if negative (hi bit set), 0x00 if positive
-                val sign: Byte = if (data[sOff + 1].toInt() < 0) 0xFF.toByte() else 0x00
-                output[dOff + 0] = data[sOff + 0]  // sample low byte
-                output[dOff + 1] = data[sOff + 1]  // sample high byte
-                output[dOff + 2] = sign
-                output[dOff + 3] = sign
+                val dOff = outOff + ch * 2
+                output[dOff + 0] = data[sOff + 0]
+                output[dOff + 1] = data[sOff + 1]
             }
         }
 
