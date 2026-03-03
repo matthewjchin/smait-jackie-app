@@ -158,6 +158,7 @@ class MainActivity : AppCompatActivity() {
     // ─── TTS ───
     private var tts: TextToSpeech? = null
     private var ttsVolume: Float = 0.5f  // 0.0 = mute, 1.0 = max
+    private val isSpeaking = AtomicBoolean(false)  // true while TTS is playing
 
     // ─── Prefs ───
     private lateinit var prefs: SharedPreferences
@@ -771,9 +772,34 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun speakText(text: String) {
+        isSpeaking.set(true)
+        // Tell server we're speaking (so it can pause VAD)
+        webSocket?.send(org.json.JSONObject().apply {
+            put("type", "tts_state")
+            put("speaking", true)
+        }.toString())
+
         val params = Bundle()
         params.putFloat(TextToSpeech.Engine.KEY_PARAM_VOLUME, ttsVolume)
         tts?.speak(text, TextToSpeech.QUEUE_FLUSH, params, "tts_${System.currentTimeMillis()}")
+
+        tts?.setOnUtteranceProgressListener(object : android.speech.tts.UtteranceProgressListener() {
+            override fun onStart(utteranceId: String?) {}
+            override fun onDone(utteranceId: String?) {
+                isSpeaking.set(false)
+                webSocket?.send(org.json.JSONObject().apply {
+                    put("type", "tts_state")
+                    put("speaking", false)
+                }.toString())
+            }
+            override fun onError(utteranceId: String?) {
+                isSpeaking.set(false)
+                webSocket?.send(org.json.JSONObject().apply {
+                    put("type", "tts_state")
+                    put("speaking", false)
+                }.toString())
+            }
+        })
     }
 
     // ═══════════════════════════════════════════════════════════════
@@ -944,7 +970,7 @@ class MainActivity : AppCompatActivity() {
             val buffer = ByteArray(bufferSize)
             while (isStreaming.get()) {
                 val read = audioRecord?.read(buffer, 0, buffer.size) ?: 0
-                if (read > 0) {
+                if (read > 0 && !isSpeaking.get()) {
                     val frame = ByteArray(1 + read)
                     frame[0] = AUDIO_TYPE
                     System.arraycopy(buffer, 0, frame, 1, read)
