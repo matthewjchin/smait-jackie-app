@@ -157,6 +157,7 @@ class MainActivity : AppCompatActivity() {
 
     // ─── TTS ───
     private var tts: TextToSpeech? = null
+    private var ttsVolume: Float = 0.5f  // 0.0 = mute, 1.0 = max
 
     // ─── Prefs ───
     private lateinit var prefs: SharedPreferences
@@ -296,6 +297,37 @@ class MainActivity : AppCompatActivity() {
         // Click overlay background to dismiss settings
         settingsOverlay.setOnClickListener { hideSettings() }
         settingsSheet.setOnClickListener { /* consume click */ }
+
+        // Volume + config controls (gear icon → config overlay)
+        findViewById<TextView>(R.id.gearButton).setOnClickListener {
+            findViewById<FrameLayout>(R.id.configOverlay).visibility = View.VISIBLE
+        }
+        findViewById<FrameLayout>(R.id.configOverlay).setOnClickListener {
+            it.visibility = View.GONE
+        }
+        findViewById<android.widget.LinearLayout>(R.id.configSheet).setOnClickListener { /* consume */ }
+
+        // Volume slider
+        ttsVolume = prefs.getFloat("tts_volume", 0.5f)
+        val volumeSeekBar = findViewById<android.widget.SeekBar>(R.id.volumeSeekBar)
+        val volumeLabel = findViewById<TextView>(R.id.volumeLabel)
+        volumeSeekBar.progress = (ttsVolume * 100).toInt()
+        volumeLabel.text = "Speaker Volume: ${(ttsVolume * 100).toInt()}%"
+        volumeSeekBar.setOnSeekBarChangeListener(object : android.widget.SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(sb: android.widget.SeekBar?, progress: Int, fromUser: Boolean) {
+                ttsVolume = progress / 100f
+                volumeLabel.text = "Speaker Volume: ${progress}%"
+            }
+            override fun onStartTrackingTouch(sb: android.widget.SeekBar?) {}
+            override fun onStopTrackingTouch(sb: android.widget.SeekBar?) {
+                prefs.edit().putFloat("tts_volume", ttsVolume).apply()
+                Log.i(TAG, "TTS volume set to $ttsVolume")
+            }
+        })
+
+        findViewById<MaterialButton>(R.id.configApplyButton).setOnClickListener {
+            findViewById<FrameLayout>(R.id.configOverlay).visibility = View.GONE
+        }
 
         // Selfie buttons
         selfieButton.setOnClickListener { startSelfieCountdown() }
@@ -740,7 +772,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun speakText(text: String) {
         val params = Bundle()
-        params.putFloat(TextToSpeech.Engine.KEY_PARAM_VOLUME, 0.0f) // MUTED for testing
+        params.putFloat(TextToSpeech.Engine.KEY_PARAM_VOLUME, ttsVolume)
         tts?.speak(text, TextToSpeech.QUEUE_FLUSH, params, "tts_${System.currentTimeMillis()}")
     }
 
