@@ -26,7 +26,8 @@
             </routes>
         </module>
         <xi:include href="a2dp_audio_policy_configuration_7_0.xml"/>
-        <!-- USB audio disabled for direct ALSA/CAE access -->
+        <!-- USB output only — input removed so ALSA mic is free for direct access -->
+        <xi:include href="usb_audio_policy_configuration.xml"/>
         <xi:include href="r_submix_audio_policy_configuration.xml"/>
     </modules>
     <volumes>
