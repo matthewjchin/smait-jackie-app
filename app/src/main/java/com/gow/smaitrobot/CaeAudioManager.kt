@@ -222,12 +222,17 @@ class CaeAudioManager(private val context: Context) {
     /**
      * Send beamformed audio over WebSocket with 0x01 type prefix
      */
+    private var sendCount = 0L
     private fun sendAudio(audioData: ByteArray, dataLen: Int) {
         try {
             val frame = ByteArray(1 + dataLen)
             frame[0] = AUDIO_TYPE
             System.arraycopy(audioData, 0, frame, 1, dataLen)
-            webSocket?.send(frame.toByteString(0, frame.size))
+            val sent = webSocket?.send(frame.toByteString(0, frame.size))
+            sendCount++
+            if (sendCount % 100 == 0L) {
+                Log.i(TAG, "WS send #$sendCount: ${frame.size} bytes, result=$sent, ws=${webSocket != null}")
+            }
         } catch (e: Exception) {
             Log.e(TAG, "Send audio error", e)
         }
