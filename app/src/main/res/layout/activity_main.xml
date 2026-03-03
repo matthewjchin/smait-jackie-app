@@ -64,8 +64,8 @@
 
             <ImageView
                 android:id="@+id/biorobLogo"
-                android:layout_width="260dp"
-                android:layout_height="170dp"
+                android:layout_width="360dp"
+                android:layout_height="220dp"
                 android:scaleType="fitCenter"
                 android:src="@drawable/biorob_logo"
                 android:contentDescription="BioRob Lab Logo"
@@ -128,9 +128,9 @@
                 android:layout_height="wrap_content"
                 android:text="@string/event_badge"
                 android:textColor="@color/accent_blue"
-                android:textSize="15sp"
+                android:textSize="26sp"
                 android:fontFamily="sans-serif-medium"
-                android:letterSpacing="0.25"
+                android:letterSpacing="0.15"
                 android:layout_marginBottom="20dp" />
 
             <!-- Thin divider -->
@@ -153,18 +153,12 @@
                 android:letterSpacing="0.05"
                 android:gravity="center" />
 
-            <!-- Jackie subtitle — hidden ref kept for code compatibility -->
+            <!-- Jackie subtitle — kept for code compatibility, hidden -->
             <TextView
                 android:id="@+id/jackieTitle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/jackie_subtitle"
-                android:textColor="@color/text_muted"
-                android:textSize="13sp"
-                android:fontFamily="sans-serif-light"
-                android:letterSpacing="0.08"
-                android:layout_marginTop="6dp"
-                android:gravity="center" />
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:visibility="gone" />
 
         </LinearLayout>
 
