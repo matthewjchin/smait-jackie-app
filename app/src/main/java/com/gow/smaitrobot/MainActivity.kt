@@ -740,7 +740,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun speakText(text: String) {
         val params = Bundle()
-        params.putFloat(TextToSpeech.Engine.KEY_PARAM_VOLUME, 0.4f) // 0.0 = silent, 1.0 = max
+        params.putFloat(TextToSpeech.Engine.KEY_PARAM_VOLUME, 0.0f) // MUTED for testing
         tts?.speak(text, TextToSpeech.QUEUE_FLUSH, params, "tts_${System.currentTimeMillis()}")
     }
 
