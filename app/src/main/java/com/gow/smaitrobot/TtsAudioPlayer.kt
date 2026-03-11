@@ -131,13 +131,31 @@ class TtsAudioPlayer(
         val handler = playbackHandler ?: return
         handler.post {
             try {
-                track.stop()
+                track.pause()
                 track.flush()
             } catch (e: Exception) {
                 Log.w(TAG, "stop() error: ${e.message}")
             }
         }
         Log.d(TAG, "TTS playback stopped")
+    }
+
+    /**
+     * Ensure AudioTrack is in PLAYING state before writing.
+     * Called automatically by [handleBinaryFrame] so that playback resumes
+     * after a [stop] without needing an explicit restart.
+     */
+    private fun ensurePlaying() {
+        if (audioWriter != null) return
+
+        val track = audioTrack ?: return
+        val handler = playbackHandler ?: return
+        handler.post {
+            if (track.playState != AudioTrack.PLAYSTATE_PLAYING) {
+                track.play()
+                Log.d(TAG, "AudioTrack restarted")
+            }
+        }
     }
 
     /**
@@ -192,6 +210,8 @@ class TtsAudioPlayer(
 
         return when (data[0]) {
             TTS_FRAME_TYPE -> {
+                // Restart AudioTrack if it was stopped (e.g., after tts_control:end)
+                ensurePlaying()
                 write(data, 1, data.size - 1)
                 true
             }

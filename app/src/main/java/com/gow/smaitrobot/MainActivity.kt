@@ -1169,16 +1169,23 @@ class MainActivity : AppCompatActivity() {
                 }
                 "tts_control" -> {
                     val action = json.optString("action", "")
-                    if (action == "end") {
-                        ttsAudioPlayer?.stop()
-                        isSpeaking.set(false)
-                        Log.i(TAG, "TTS audio stream ended (tts_control:end)")
+                    when (action) {
+                        "start" -> {
+                            isSpeaking.set(true)
+                            Log.i(TAG, "TTS audio stream starting (tts_control:start)")
+                        }
+                        "end" -> {
+                            ttsAudioPlayer?.stop()
+                            isSpeaking.set(false)
+                            Log.i(TAG, "TTS audio stream ended (tts_control:end)")
+                        }
                     }
                 }
                 "response" -> {
                     val respText = json.getString("text")
                     addChatMessage(respText, false)
-                    speakText(respText)
+                    // Server sends binary 0x05 PCM frames for TTS — do NOT also
+                    // call speakText() or Android TTS will double-speak.
                 }
                 "user_name" -> {
                     val name = json.getString("name")
