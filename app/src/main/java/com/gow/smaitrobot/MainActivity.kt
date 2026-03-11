@@ -1087,7 +1087,13 @@ class MainActivity : AppCompatActivity() {
             }
 
             override fun onClosed(ws: WebSocket, code: Int, reason: String) {
-                Log.i(TAG, "WebSocket closed: $reason")
+                Log.i(TAG, "WebSocket closed: code=$code reason=$reason")
+                if (code == 1008) {
+                    // Server rejected us (duplicate connection / stale session).
+                    // Wait longer before retrying so the old connection can time out.
+                    Log.w(TAG, "Server rejected connection (1008). Waiting 15s for stale session to expire.")
+                    reconnectDelay = 15_000L
+                }
                 onDisconnected()
             }
         })
