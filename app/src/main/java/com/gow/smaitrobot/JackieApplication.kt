@@ -1,12 +1,53 @@
 package com.gow.smaitrobot
 
 import android.app.Application
+import android.content.Context
+import com.gow.smaitrobot.data.theme.ThemeRepository
+import com.gow.smaitrobot.data.websocket.WebSocketRepository
+import okhttp3.OkHttpClient
+import java.util.concurrent.TimeUnit
 
 /**
- * Application subclass for SMAIT Jackie robot app.
+ * Application subclass for the SMAIT Jackie robot app.
  *
- * Will later hold singleton instances for WebSocketRepository, ThemeRepository,
- * and other app-scoped dependencies. Currently a minimal stub to register
- * the application class in AndroidManifest.xml.
+ * Holds app-scoped singletons:
+ * - [webSocketRepository] — OkHttp3 WebSocket client with SharedFlow event emission
+ * - [themeRepository] — Loads WiE 2026 theme config from assets JSON
+ *
+ * Access from any [Context] via the [jackieApp] extension property:
+ * ```kotlin
+ * val repo = context.jackieApp.webSocketRepository
+ * ```
  */
-class JackieApplication : Application()
+class JackieApplication : Application() {
+
+    lateinit var webSocketRepository: WebSocketRepository
+        private set
+
+    lateinit var themeRepository: ThemeRepository
+        private set
+
+    override fun onCreate() {
+        super.onCreate()
+
+        // Build OkHttpClient with timeouts suitable for a persistent WebSocket
+        val okHttpClient = OkHttpClient.Builder()
+            .connectTimeout(10, TimeUnit.SECONDS)
+            .readTimeout(0, TimeUnit.SECONDS)   // 0 = no timeout (WebSocket stays open)
+            .writeTimeout(10, TimeUnit.SECONDS)
+            .pingInterval(30, TimeUnit.SECONDS) // Keep-alive pings every 30s
+            .build()
+
+        webSocketRepository = WebSocketRepository(okHttpClient)
+        themeRepository = ThemeRepository(this)
+
+        // Load WiE 2026 theme synchronously — required before the first frame is rendered.
+        // loadSync() uses IO on the calling thread; acceptable in Application.onCreate()
+        // since it runs before any Activity starts.
+        themeRepository.loadSync("wie2026_theme.json")
+    }
+}
+
+/** Extension property for convenient access to [JackieApplication] from any [Context]. */
+val Context.jackieApp: JackieApplication
+    get() = applicationContext as JackieApplication

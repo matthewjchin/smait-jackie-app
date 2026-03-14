@@ -2,7 +2,6 @@ package com.gow.smaitrobot
 
 import com.gow.smaitrobot.navigation.Screen
 import junit.framework.TestCase.assertEquals
-import junit.framework.TestCase.assertNotNull
 import junit.framework.TestCase.assertTrue
 import org.junit.Test
 
@@ -82,28 +81,28 @@ class AppNavigationTest {
     }
 
     @Test
-    fun `Test 2f - Home screen has non-null icon`() {
-        assertNotNull(Screen.Home.icon)
+    fun `Test 2f - Home screen has non-empty icon name`() {
+        assertTrue(Screen.Home.iconName.isNotEmpty())
     }
 
     @Test
-    fun `Test 2g - Chat screen has non-null icon`() {
-        assertNotNull(Screen.Chat.icon)
+    fun `Test 2g - Chat screen has non-empty icon name`() {
+        assertTrue(Screen.Chat.iconName.isNotEmpty())
     }
 
     @Test
-    fun `Test 2h - Map screen has non-null icon`() {
-        assertNotNull(Screen.Map.icon)
+    fun `Test 2h - Map screen has non-empty icon name`() {
+        assertTrue(Screen.Map.iconName.isNotEmpty())
     }
 
     @Test
-    fun `Test 2i - Facilities screen has non-null icon`() {
-        assertNotNull(Screen.Facilities.icon)
+    fun `Test 2i - Facilities screen has non-empty icon name`() {
+        assertTrue(Screen.Facilities.iconName.isNotEmpty())
     }
 
     @Test
-    fun `Test 2j - EventInfo screen has non-null icon`() {
-        assertNotNull(Screen.EventInfo.icon)
+    fun `Test 2j - EventInfo screen has non-empty icon name`() {
+        assertTrue(Screen.EventInfo.iconName.isNotEmpty())
     }
 
     // ── Test 3-5: Navigation properties ──────────────────────────────────────

@@ -75,6 +75,7 @@ dependencies {
     implementation(libs.compose.material3)
     implementation(libs.compose.ui)
     implementation(libs.compose.ui.tooling.preview)
+    implementation(libs.compose.material.icons.extended)
     debugImplementation(libs.compose.ui.tooling)
 
     // Navigation + Lottie
@@ -92,6 +93,7 @@ dependencies {
     // Tests
     testImplementation(libs.junit)
     testImplementation(libs.turbine)
+    testImplementation(libs.compose.material.icons.extended)
     testImplementation(libs.mockito.kotlin)
     testImplementation(libs.mockito.core)
     testImplementation(libs.kotlinx.coroutines.test)
