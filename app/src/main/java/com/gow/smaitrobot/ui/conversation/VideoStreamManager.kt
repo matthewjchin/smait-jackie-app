@@ -2,6 +2,7 @@ package com.gow.smaitrobot.ui.conversation
 
 import android.content.Context
 import android.graphics.ImageFormat
+import android.graphics.SurfaceTexture
 import android.hardware.camera2.CameraCharacteristics
 import android.hardware.camera2.CameraDevice
 import android.hardware.camera2.CameraManager
@@ -11,6 +12,7 @@ import android.media.ImageReader
 import android.os.Handler
 import android.os.HandlerThread
 import android.util.Log
+import android.view.Surface
 import com.gow.smaitrobot.data.websocket.WebSocketRepository
 import java.io.ByteArrayOutputStream
 
@@ -45,6 +47,8 @@ class VideoStreamManager(private val wsRepo: WebSocketRepository) {
     private var imageReader: ImageReader? = null
     private var cameraThread: HandlerThread? = null
     private var cameraHandler: Handler? = null
+    private var dummyTexture: SurfaceTexture? = null
+    private var dummySurface: Surface? = null
     private var lastFrameSentMs = 0L
 
     /**
@@ -115,6 +119,10 @@ class VideoStreamManager(private val wsRepo: WebSocketRepository) {
         } catch (e: Exception) {
             Log.w(TAG, "ImageReader close error", e)
         }
+        dummySurface?.release()
+        dummySurface = null
+        dummyTexture?.release()
+        dummyTexture = null
         cameraThread?.quitSafely()
         cameraThread = null
         cameraHandler = null
@@ -145,7 +153,9 @@ class VideoStreamManager(private val wsRepo: WebSocketRepository) {
     }
 
     /**
-     * Creates a Camera2 capture session targeting the [imageReader] surface.
+     * Creates a Camera2 capture session with both a dummy preview surface and
+     * the [imageReader] surface. The RK3588 external camera HAL requires a
+     * preview-type Surface in the session for ImageReader callbacks to fire.
      * Uses TEMPLATE_PREVIEW for continuous frame delivery.
      */
     private fun startCaptureSession(
@@ -154,18 +164,29 @@ class VideoStreamManager(private val wsRepo: WebSocketRepository) {
         handler: Handler
     ) {
         try {
-            val surface = reader.surface
+            val readerSurface = reader.surface
+
+            // RK3588 HAL fix: create a dummy 1x1 SurfaceTexture as preview target.
+            // Without a preview-type surface, ImageReader.onImageAvailable never fires
+            // on Jackie's external USB camera.
+            val texture = SurfaceTexture(0)
+            texture.setDefaultBufferSize(1, 1)
+            val preview = Surface(texture)
+            dummyTexture = texture
+            dummySurface = preview
+
             @Suppress("DEPRECATION")
             camera.createCaptureSession(
-                listOf(surface),
+                listOf(preview, readerSurface),
                 object : android.hardware.camera2.CameraCaptureSession.StateCallback() {
                     override fun onConfigured(session: android.hardware.camera2.CameraCaptureSession) {
                         val request = camera.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW).apply {
-                            addTarget(surface)
+                            addTarget(preview)
+                            addTarget(readerSurface)
                             set(CaptureRequest.CONTROL_MODE, CaptureRequest.CONTROL_MODE_AUTO)
                         }.build()
                         session.setRepeatingRequest(request, null, handler)
-                        Log.i(TAG, "Capture session configured — streaming at ~10fps")
+                        Log.i(TAG, "Capture session configured with preview surface — streaming at ~10fps")
                     }
 
                     override fun onConfigureFailed(session: android.hardware.camera2.CameraCaptureSession) {
