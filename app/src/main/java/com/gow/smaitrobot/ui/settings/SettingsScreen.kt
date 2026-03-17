@@ -184,6 +184,7 @@ private fun VolumeSection(context: Context) {
     var volumePercent by remember {
         mutableFloatStateOf(if (maxVolume > 0) currentVolume.toFloat() / maxVolume else 0.5f)
     }
+    var applied by remember { mutableStateOf(true) }
 
     Text(
         text = "Speaker Volume: ${(volumePercent * 100).toInt()}%",
@@ -198,12 +199,7 @@ private fun VolumeSection(context: Context) {
         value = volumePercent,
         onValueChange = { newValue ->
             volumePercent = newValue
-            val newVolume = (newValue * maxVolume).toInt()
-            audioManager.setStreamVolume(
-                AudioManager.STREAM_MUSIC,
-                newVolume,
-                0
-            )
+            applied = false
         },
         valueRange = 0f..1f,
         modifier = Modifier.fillMaxWidth(),
@@ -218,4 +214,17 @@ private fun VolumeSection(context: Context) {
         color = MaterialTheme.colorScheme.onSurfaceVariant,
         fontSize = 14.sp
     )
+
+    Spacer(modifier = Modifier.height(12.dp))
+
+    Button(
+        onClick = {
+            val newVolume = (volumePercent * maxVolume).toInt()
+            audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, newVolume, 0)
+            applied = true
+        },
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Text(if (applied) "Volume Applied" else "Apply Volume")
+    }
 }

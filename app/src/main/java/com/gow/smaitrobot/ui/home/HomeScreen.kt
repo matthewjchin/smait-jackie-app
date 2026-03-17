@@ -14,7 +14,7 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Chat
+import androidx.compose.material.icons.automirrored.filled.Chat
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Map
@@ -203,7 +203,7 @@ private fun HomeCard(
 }
 
 private fun cardIcon(iconName: String): ImageVector = when (iconName) {
-    "chat" -> Icons.Filled.Chat
+    "chat" -> Icons.AutoMirrored.Filled.Chat
     "map" -> Icons.Filled.Map
     "star" -> Icons.Filled.Star
     "schedule" -> Icons.Filled.Schedule
