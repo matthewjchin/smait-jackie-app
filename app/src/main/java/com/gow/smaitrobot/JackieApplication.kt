@@ -27,6 +27,9 @@ class JackieApplication : Application() {
     lateinit var themeRepository: ThemeRepository
         private set
 
+    lateinit var ttsAudioPlayer: TtsAudioPlayer
+        private set
+
     override fun onCreate() {
         super.onCreate()
 
@@ -40,6 +43,12 @@ class JackieApplication : Application() {
 
         webSocketRepository = WebSocketRepository(okHttpClient)
         themeRepository = ThemeRepository(this)
+        ttsAudioPlayer = TtsAudioPlayer().also { player ->
+            player.start()
+            // Restore saved volume from SharedPreferences
+            val prefs = getSharedPreferences("smait_settings", MODE_PRIVATE)
+            player.setVolume(prefs.getFloat("tts_volume", 0.5f))
+        }
 
         // Load default BioRob theme synchronously — required before the first frame is rendered.
         // loadSync() uses IO on the calling thread; acceptable in Application.onCreate()

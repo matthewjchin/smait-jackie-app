@@ -1,7 +1,6 @@
 package com.gow.smaitrobot.ui.settings
 
 import android.content.Context
-import android.media.AudioManager
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -27,6 +26,7 @@ import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -44,11 +44,17 @@ import com.gow.smaitrobot.data.websocket.WebSocketRepository
 import com.gow.smaitrobot.jackieApp
 import com.gow.smaitrobot.ui.common.SubScreenTopBar
 
+private const val PREFS_NAME = "smait_settings"
+private const val KEY_VOLUME = "tts_volume"
+private const val KEY_SERVER_IP = "server_ip"
+private const val KEY_SERVER_PORT = "server_port"
+
 /**
- * Settings screen with server connection and volume control.
+ * Settings screen with server connection and TTS volume control.
  *
  * - Server IP/port input with Connect/Disconnect buttons and live status dot
- * - Volume slider controlling system STREAM_MUSIC (used by TTS playback)
+ * - Volume slider controlling TTS AudioTrack gain directly (bypasses broken system volume)
+ * - All settings persisted to SharedPreferences
  */
 @Composable
 fun SettingsScreen(
@@ -71,25 +77,24 @@ fun SettingsScreen(
                 .fillMaxWidth()
                 .padding(horizontal = 32.dp, vertical = 24.dp)
         ) {
-            // --- Server Connection ---
-            ServerConnectionSection(wsRepo = wsRepo)
+            ServerConnectionSection(wsRepo = wsRepo, context = context)
 
             Spacer(modifier = Modifier.height(24.dp))
             HorizontalDivider()
             Spacer(modifier = Modifier.height(24.dp))
 
-            // --- Volume ---
             VolumeSection(context = context)
         }
     }
 }
 
 @Composable
-private fun ServerConnectionSection(wsRepo: WebSocketRepository) {
+private fun ServerConnectionSection(wsRepo: WebSocketRepository, context: Context) {
     val isConnected by wsRepo.isConnected.collectAsStateWithLifecycle()
+    val prefs = remember { context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE) }
 
-    var ipAddress by remember { mutableStateOf("10.31.51.164") }
-    var port by remember { mutableStateOf("8765") }
+    var ipAddress by remember { mutableStateOf(prefs.getString(KEY_SERVER_IP, "10.31.51.164") ?: "10.31.51.164") }
+    var port by remember { mutableStateOf(prefs.getString(KEY_SERVER_PORT, "8765") ?: "8765") }
 
     Text(
         text = "Server Connection",
@@ -100,7 +105,6 @@ private fun ServerConnectionSection(wsRepo: WebSocketRepository) {
 
     Spacer(modifier = Modifier.height(12.dp))
 
-    // Status indicator
     Row(
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -121,7 +125,6 @@ private fun ServerConnectionSection(wsRepo: WebSocketRepository) {
 
     Spacer(modifier = Modifier.height(16.dp))
 
-    // IP + Port inputs
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -146,7 +149,6 @@ private fun ServerConnectionSection(wsRepo: WebSocketRepository) {
 
     Spacer(modifier = Modifier.height(16.dp))
 
-    // Connect / Disconnect buttons
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.End
@@ -164,6 +166,11 @@ private fun ServerConnectionSection(wsRepo: WebSocketRepository) {
         Spacer(modifier = Modifier.width(12.dp))
         Button(
             onClick = {
+                // Save to prefs
+                prefs.edit()
+                    .putString(KEY_SERVER_IP, ipAddress)
+                    .putString(KEY_SERVER_PORT, port)
+                    .apply()
                 val url = "ws://$ipAddress:$port"
                 wsRepo.disconnect()
                 wsRepo.connect(url)
@@ -176,25 +183,16 @@ private fun ServerConnectionSection(wsRepo: WebSocketRepository) {
 
 @Composable
 private fun VolumeSection(context: Context) {
-    val audioManager = remember { context.getSystemService(Context.AUDIO_SERVICE) as AudioManager }
-    val maxVolume = remember { audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC) }
+    val ttsPlayer = context.jackieApp.ttsAudioPlayer
+    val prefs = remember { context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE) }
 
-    // Re-sync slider with actual system volume every time this screen becomes visible
-    var volumeIndex by remember { mutableStateOf(audioManager.getStreamVolume(AudioManager.STREAM_MUSIC)) }
-    val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
-    androidx.compose.runtime.DisposableEffect(lifecycleOwner) {
-        val observer = androidx.lifecycle.LifecycleEventObserver { _, event ->
-            if (event == androidx.lifecycle.Lifecycle.Event.ON_RESUME) {
-                volumeIndex = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC)
-            }
-        }
-        lifecycleOwner.lifecycle.addObserver(observer)
-        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    // Load saved volume (0.0 - 1.0), default 50%
+    var volume by remember {
+        mutableFloatStateOf(prefs.getFloat(KEY_VOLUME, 0.5f))
     }
-    val percent = if (maxVolume > 0) (volumeIndex * 100) / maxVolume else 50
 
     Text(
-        text = "Speaker Volume: $percent%",
+        text = "Speaker Volume: ${(volume * 100).toInt()}%",
         color = MaterialTheme.colorScheme.onBackground,
         fontSize = 20.sp,
         fontWeight = FontWeight.Medium
@@ -203,15 +201,17 @@ private fun VolumeSection(context: Context) {
     Spacer(modifier = Modifier.height(8.dp))
 
     Slider(
-        value = volumeIndex.toFloat(),
+        value = volume,
         onValueChange = { newValue ->
-            volumeIndex = newValue.toInt()
+            volume = newValue
+            // Apply immediately to AudioTrack
+            ttsPlayer.setVolume(newValue)
         },
         onValueChangeFinished = {
-            audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, volumeIndex, AudioManager.FLAG_SHOW_UI)
+            // Persist to SharedPreferences
+            prefs.edit().putFloat(KEY_VOLUME, volume).apply()
         },
-        valueRange = 0f..maxVolume.toFloat(),
-        steps = (maxVolume - 1).coerceAtLeast(0),
+        valueRange = 0f..1f,
         modifier = Modifier.fillMaxWidth(),
         colors = SliderDefaults.colors(
             thumbColor = MaterialTheme.colorScheme.primary,

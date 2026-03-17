@@ -79,7 +79,7 @@ fun AppScaffold(
                 FacilitiesViewModel(wsRepo) as T
         }
     )
-    val ttsPlayer = remember { TtsAudioPlayer().also { it.start() } }
+    val ttsPlayer = remember { context.jackieApp.ttsAudioPlayer }
     val caeAudioManager = remember { CaeAudioManager(context) }
     val standardAudioManager = remember { if (isEmulator) StandardAudioManager() else null }
     val videoStreamManager = remember { VideoStreamManager(wsRepo) }
