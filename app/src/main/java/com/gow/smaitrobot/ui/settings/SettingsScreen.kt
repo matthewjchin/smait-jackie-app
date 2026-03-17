@@ -211,7 +211,7 @@ private fun VolumeSection(context: Context) {
             audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, volumeIndex, AudioManager.FLAG_SHOW_UI)
         },
         valueRange = 0f..maxVolume.toFloat(),
-        steps = maxVolume - 1,
+        steps = (maxVolume - 1).coerceAtLeast(0),
         modifier = Modifier.fillMaxWidth(),
         colors = SliderDefaults.colors(
             thumbColor = MaterialTheme.colorScheme.primary,
