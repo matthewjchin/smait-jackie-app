@@ -1,5 +1,6 @@
 package com.gow.smaitrobot.navigation
 
+import android.content.Context
 import android.os.Build
 import android.util.Log
 import androidx.compose.foundation.layout.fillMaxSize
@@ -92,11 +93,18 @@ fun AppScaffold(
         )
     }
 
-    // Auto-connect WebSocket on launch
+    // Auto-connect using saved IP from Settings (if available)
     LaunchedEffect(Unit) {
-        val url = if (isEmulator) EMULATOR_WS_URL else JACKIE_WS_URL
-        Log.i(TAG, "Connecting WebSocket to $url (emulator=$isEmulator)")
-        wsRepo.connect(url)
+        val prefs = context.getSharedPreferences("smait_settings", Context.MODE_PRIVATE)
+        val savedIp = prefs.getString("server_ip", null)
+        val savedPort = prefs.getString("server_port", "8765")
+        if (savedIp != null) {
+            val url = "ws://$savedIp:$savedPort"
+            Log.i(TAG, "Auto-connecting WebSocket to $url")
+            wsRepo.connect(url)
+        } else {
+            Log.i(TAG, "No saved server IP — connect via Settings")
+        }
     }
 
     // Start audio + video capture on launch
