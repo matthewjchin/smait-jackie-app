@@ -179,12 +179,14 @@ private fun ServerConnectionSection(wsRepo: WebSocketRepository) {
 private fun VolumeSection(context: Context) {
     val audioManager = remember { context.getSystemService(Context.AUDIO_SERVICE) as AudioManager }
     val maxVolume = remember { audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC) }
-    val currentVolume = remember { audioManager.getStreamVolume(AudioManager.STREAM_MUSIC) }
 
-    var volumePercent by remember {
+    // Re-read actual system volume every time this composable enters composition
+    val currentVolume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC)
+
+    var volumePercent by remember(currentVolume) {
         mutableFloatStateOf(if (maxVolume > 0) currentVolume.toFloat() / maxVolume else 0.5f)
     }
-    var applied by remember { mutableStateOf(true) }
+    var applied by remember(currentVolume) { mutableStateOf(true) }
 
     Text(
         text = "Speaker Volume: ${(volumePercent * 100).toInt()}%",
