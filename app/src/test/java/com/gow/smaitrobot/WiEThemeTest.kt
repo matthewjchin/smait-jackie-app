@@ -2,53 +2,51 @@ package com.gow.smaitrobot
 
 import com.google.gson.Gson
 import com.gow.smaitrobot.data.model.ChatMessage
-import com.gow.smaitrobot.data.model.FeedbackData
 import com.gow.smaitrobot.data.model.NavStatus
-import com.gow.smaitrobot.data.model.PoiItem
 import com.gow.smaitrobot.data.model.ThemeConfig
-import com.gow.smaitrobot.ui.theme.WiEColors
+import com.gow.smaitrobot.ui.theme.BioRobColors
 import org.junit.Assert.*
 import org.junit.Test
 
 /**
- * Tests for WiE color constants, data models, and theme swap verification.
+ * Tests for BioRob color constants, data models, and theme swap verification.
  */
 class WiEThemeTest {
 
     private val gson = Gson()
 
-    // ─── WiEColors constant tests ───
+    // ─── BioRobColors constant tests ───
 
     @Test
-    fun `WiEColors PRIMARY is WiE purple`() {
-        assertEquals("PRIMARY must be WiE purple", "#7B2D8B", WiEColors.PRIMARY)
+    fun `BioRobColors PRIMARY is BioRob blue`() {
+        assertEquals("PRIMARY must be BioRob blue", "#0956A4", BioRobColors.PRIMARY)
     }
 
     @Test
-    fun `WiEColors SECONDARY is teal`() {
-        assertEquals("SECONDARY must be WiE teal", "#00A99D", WiEColors.SECONDARY)
+    fun `BioRobColors SECONDARY is BioRob gold`() {
+        assertEquals("SECONDARY must be BioRob gold", "#E8A317", BioRobColors.SECONDARY)
     }
 
     @Test
-    fun `WiEColors TERTIARY is orange`() {
-        assertEquals("TERTIARY must be WiE orange", "#F7941D", WiEColors.TERTIARY)
+    fun `BioRobColors TERTIARY is dark navy`() {
+        assertEquals("TERTIARY must be dark navy", "#1A3D6D", BioRobColors.TERTIARY)
     }
 
     // ─── Theme swap verification ───
 
-    private val DEFAULT_JSON = """
+    private val BIOROB_JSON = """
         {
-          "eventName": "Default Event",
-          "tagline": "Default Theme",
+          "eventName": "BioRob Lab",
+          "tagline": "Your Intelligent Campus Guide",
           "colors": {
-            "primary": "#1565C0",
-            "secondary": "#546E7A",
-            "tertiary": "#78909C",
-            "background": "#F5F5F5",
+            "primary": "#0956A4",
+            "secondary": "#E8A317",
+            "tertiary": "#1A3D6D",
+            "background": "#F8F9FA",
             "onPrimary": "#FFFFFF",
-            "onBackground": "#212121",
+            "onBackground": "#1A1A2E",
             "surface": "#FFFFFF",
-            "onSurface": "#212121"
+            "onSurface": "#1A1A2E"
           },
           "cards": [],
           "sponsors": [],
@@ -57,10 +55,10 @@ class WiEThemeTest {
         }
     """.trimIndent()
 
-    private val WIE_JSON = """
+    private val ALT_JSON = """
         {
-          "eventName": "WiE 2026",
-          "tagline": "Engineering Beyond Imagination",
+          "eventName": "Alt Event",
+          "tagline": "Different Theme",
           "colors": {
             "primary": "#7B2D8B",
             "secondary": "#00A99D",
@@ -79,13 +77,13 @@ class WiEThemeTest {
     """.trimIndent()
 
     @Test
-    fun `default theme primary color differs from WiE theme primary`() {
-        val defaultConfig = gson.fromJson(DEFAULT_JSON, ThemeConfig::class.java)
-        val wieConfig = gson.fromJson(WIE_JSON, ThemeConfig::class.java)
+    fun `BioRob theme primary color differs from alt theme primary`() {
+        val biorobConfig = gson.fromJson(BIOROB_JSON, ThemeConfig::class.java)
+        val altConfig = gson.fromJson(ALT_JSON, ThemeConfig::class.java)
         assertNotEquals(
-            "default and WiE primary colors must differ (swap verification)",
-            defaultConfig.colors.primary,
-            wieConfig.colors.primary
+            "BioRob and alt primary colors must differ (swap verification)",
+            biorobConfig.colors.primary,
+            altConfig.colors.primary
         )
     }
 

@@ -32,87 +32,79 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavHostController
 import com.gow.smaitrobot.data.model.PoiItem
+import com.gow.smaitrobot.ui.common.SubScreenTopBar
 
 /**
  * Facilities screen — searchable list of points of interest with navigation action.
- *
- * Layout:
- * - Search bar at top: OutlinedTextField with search icon
- * - LazyColumn of POI ElevatedCards with humanName, category chip, floor info, "Take me there" button
- * - Empty state: "No matching facilities" when search returns no results
- * - Loading state: CircularProgressIndicator while waiting for poi_list from server
- *
- * Accessibility: 18sp minimum text, large touch targets (60dp minimum height on buttons/cards).
- *
- * @param viewModel [FacilitiesViewModel] providing filteredPois, searchQuery, isLoading StateFlows.
  */
 @Composable
-fun FacilitiesScreen(viewModel: FacilitiesViewModel) {
+fun FacilitiesScreen(
+    viewModel: FacilitiesViewModel,
+    navController: NavHostController
+) {
     val filteredPois by viewModel.filteredPois.collectAsState()
     val searchQuery by viewModel.searchQuery.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(horizontal = 16.dp, vertical = 8.dp)
-    ) {
-
-        // ── Search bar ─────────────────────────────────────────────────────────
-        OutlinedTextField(
-            value = searchQuery,
-            onValueChange = { viewModel.updateSearchQuery(it) },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 8.dp),
-            placeholder = {
-                Text(
-                    text = "Search facilities...",
-                    fontSize = 18.sp
-                )
-            },
-            leadingIcon = {
-                Icon(
-                    imageVector = Icons.Filled.Search,
-                    contentDescription = "Search"
-                )
-            },
-            singleLine = true,
-            textStyle = androidx.compose.ui.text.TextStyle(fontSize = 18.sp)
+    Column(modifier = Modifier.fillMaxSize()) {
+        SubScreenTopBar(
+            title = "Facilities",
+            onBack = { navController.popBackStack() }
         )
 
-        // ── Content: loading / empty / POI list ────────────────────────────────
-        when {
-            isLoading -> {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    CircularProgressIndicator(modifier = Modifier.size(48.dp))
-                }
-            }
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 16.dp, vertical = 8.dp)
+        ) {
+            // Search bar
+            OutlinedTextField(
+                value = searchQuery,
+                onValueChange = { viewModel.updateSearchQuery(it) },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 8.dp),
+                placeholder = { Text(text = "Search facilities...", fontSize = 18.sp) },
+                leadingIcon = {
+                    Icon(imageVector = Icons.Filled.Search, contentDescription = "Search")
+                },
+                singleLine = true,
+                textStyle = androidx.compose.ui.text.TextStyle(fontSize = 18.sp)
+            )
 
-            filteredPois.isEmpty() -> {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "No matching facilities",
-                        fontSize = 18.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+            when {
+                isLoading -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator(modifier = Modifier.size(48.dp))
+                    }
                 }
-            }
 
-            else -> {
-                LazyColumn(
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                    modifier = Modifier.fillMaxSize()
-                ) {
-                    items(filteredPois, key = { it.name }) { poi ->
-                        PoiCard(poi = poi, onNavigate = { viewModel.navigateTo(poi.name) })
+                filteredPois.isEmpty() -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "No matching facilities",
+                            fontSize = 18.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+
+                else -> {
+                    LazyColumn(
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                        modifier = Modifier.fillMaxSize()
+                    ) {
+                        items(filteredPois, key = { it.name }) { poi ->
+                            PoiCard(poi = poi, onNavigate = { viewModel.navigateTo(poi.name) })
+                        }
                     }
                 }
             }
@@ -120,23 +112,14 @@ fun FacilitiesScreen(viewModel: FacilitiesViewModel) {
     }
 }
 
-/**
- * Card representing a single point of interest.
- *
- * Shows humanName (20sp bold), category chip, optional floor label, and "Take me there" button.
- * Minimum 60dp touch target height enforced on the action button.
- */
 @Composable
 private fun PoiCard(poi: PoiItem, onNavigate: () -> Unit) {
-    ElevatedCard(
-        modifier = Modifier.fillMaxWidth()
-    ) {
+    ElevatedCard(modifier = Modifier.fillMaxWidth()) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp, vertical = 12.dp)
         ) {
-            // POI name
             Text(
                 text = poi.humanName,
                 fontSize = 20.sp,
@@ -146,7 +129,6 @@ private fun PoiCard(poi: PoiItem, onNavigate: () -> Unit) {
 
             Spacer(modifier = Modifier.height(6.dp))
 
-            // Category chip + floor info row
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -173,7 +155,6 @@ private fun PoiCard(poi: PoiItem, onNavigate: () -> Unit) {
 
             Spacer(modifier = Modifier.height(10.dp))
 
-            // "Take me there" button — minimum 60dp height
             Button(
                 onClick = onNavigate,
                 modifier = Modifier
@@ -186,10 +167,7 @@ private fun PoiCard(poi: PoiItem, onNavigate: () -> Unit) {
                     modifier = Modifier.size(20.dp)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = "Take me there",
-                    fontSize = 18.sp
-                )
+                Text(text = "Take me there", fontSize = 18.sp)
             }
         }
     }

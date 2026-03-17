@@ -8,10 +8,7 @@ import kotlinx.serialization.Serializable
  * Each screen is a Kotlin object — sealed class subtypes work as navigation routes
  * with kotlinx-serialization 1.7+ and Navigation Compose 2.8+.
  *
- * The [label] and [iconName] properties drive the bottom navigation bar.
- * The actual [ImageVector] is resolved in the AppNavigation composable via
- * [screenIcon()] to keep this class free of Compose/Android dependencies
- * (enabling plain JVM unit tests).
+ * Navigation is driven by the Home screen card grid (no bottom nav bar).
  *
  * Example navigation:
  * ```kotlin
@@ -21,14 +18,10 @@ import kotlinx.serialization.Serializable
 @Serializable
 sealed class Screen {
 
-    /** The label displayed in the bottom navigation bar. */
+    /** The label displayed on the screen's top bar. */
     abstract val label: String
 
-    /**
-     * Icon identifier for the bottom navigation bar item.
-     * Maps to a Material Icons filled icon name.
-     * Resolved to an [ImageVector] by [screenIcon] in the Compose layer.
-     */
+    /** Icon identifier for home screen cards. */
     abstract val iconName: String
 
     @Serializable
@@ -59,10 +52,5 @@ sealed class Screen {
     object EventInfo : Screen() {
         override val label: String = "Events"
         override val iconName: String = "Info"
-    }
-
-    companion object {
-        /** All screens in the bottom nav bar, in display order. */
-        val navBarItems: List<Screen> = listOf(Home, Chat, Map, Facilities, EventInfo)
     }
 }

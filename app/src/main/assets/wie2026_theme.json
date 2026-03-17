@@ -20,52 +20,64 @@
     {
       "label": "Ask Me Anything",
       "action": "navigate:chat",
-      "icon": "ic_chat",
-      "description": "Chat with your AI guide about the event, directions, or anything else."
+      "icon": "chat",
+      "description": "Chat with your AI guide about the event, directions, or anything else"
     },
     {
       "label": "Guided Tour",
       "action": "navigate:map",
-      "icon": "ic_map",
-      "description": "Let the robot guide you to any room or exhibit in the Student Union."
+      "icon": "map",
+      "description": "Let the robot guide you to any room or exhibit"
     },
     {
       "label": "Keynote Info",
       "action": "inline:keynote",
-      "icon": "ic_keynote",
-      "description": "Details about today's keynote speaker and presentation."
+      "icon": "star",
+      "description": "Details about today's keynote speaker"
     },
     {
       "label": "Session Tracks",
       "action": "inline:sessions",
-      "icon": "ic_sessions",
-      "description": "Browse all technical sessions, workshops, and panels."
+      "icon": "schedule",
+      "description": "Browse technical sessions, workshops, and panels"
     },
     {
       "label": "Facilities",
       "action": "navigate:facilities",
-      "icon": "ic_facilities",
-      "description": "Find restrooms, prayer rooms, nursing rooms, and other facilities."
+      "icon": "location",
+      "description": "Find restrooms, prayer rooms, and other facilities"
     },
     {
       "label": "Event Info",
       "action": "navigate:eventinfo",
-      "icon": "ic_info",
-      "description": "Venue map, WiFi password, schedule, and general event information."
+      "icon": "info",
+      "description": "Venue map, WiFi, schedule, and general info"
     }
   ],
   "sponsors": [
     {
-      "name": "SJSU College of Engineering",
-      "logoAsset": "sjsu_coe_logo.png"
+      "name": "City of San Jose",
+      "logoAsset": "sponsor_city_sj.png"
     },
     {
-      "name": "BioRob Lab",
-      "logoAsset": "biorob_logo.png"
+      "name": "Adobe",
+      "logoAsset": "sponsor_adobe.png"
     },
     {
-      "name": "IEEE WiE",
-      "logoAsset": "ieee_wie_logo.png"
+      "name": "LEGO Education",
+      "logoAsset": "sponsor_lego.png"
+    },
+    {
+      "name": "The Tech Interactive",
+      "logoAsset": "sponsor_tech.png"
+    },
+    {
+      "name": "Cadence",
+      "logoAsset": "sponsor_cadence.png"
+    },
+    {
+      "name": "NVIDIA",
+      "logoAsset": "sponsor_nvidia.png"
     }
   ],
   "schedule": [
@@ -116,19 +128,19 @@
     {
       "name": "Dr. Sarah Chen",
       "title": "Senior Principal Engineer, Google Robotics",
-      "bio": "Dr. Chen leads the perception team at Google Robotics, focusing on embodied AI and human-robot interaction. She holds a PhD from MIT and has 15+ patents in robotic vision.",
+      "bio": "Dr. Chen leads the perception team at Google Robotics, focusing on embodied AI and human-robot interaction.",
       "photoAsset": "speaker_chen.jpg"
     },
     {
       "name": "Prof. Maria Rodriguez",
       "title": "Associate Professor, SJSU Electrical Engineering",
-      "bio": "Prof. Rodriguez runs the Intelligent Systems Lab at SJSU. Her research spans reinforcement learning, autonomous systems, and accessible robotics for underserved communities.",
+      "bio": "Prof. Rodriguez runs the Intelligent Systems Lab at SJSU. Her research spans reinforcement learning and accessible robotics.",
       "photoAsset": "speaker_rodriguez.jpg"
     },
     {
       "name": "Dr. Aisha Patel",
       "title": "Co-Founder & CTO, Autonomy Labs",
-      "bio": "Dr. Patel co-founded Autonomy Labs, building autonomous inspection robots for industrial applications. Forbes 30 Under 30, 2024.",
+      "bio": "Dr. Patel co-founded Autonomy Labs, building autonomous inspection robots for industrial applications.",
       "photoAsset": "speaker_patel.jpg"
     }
   ]

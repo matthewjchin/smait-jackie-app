@@ -33,31 +33,19 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavHostController
 import com.gow.smaitrobot.data.model.ScheduleItem
 import com.gow.smaitrobot.data.model.SpeakerInfo
 import com.gow.smaitrobot.ui.common.SponsorBar
+import com.gow.smaitrobot.ui.common.SubScreenTopBar
 
 /**
- * Event Info screen composable — displays schedule, speakers, and venue info from JSON config.
- *
- * Layout (scrollable Column):
- * 1. Event header — event name (28sp bold) + tagline (18sp)
- * 2. Schedule section — "Schedule" heading + LazyColumn of schedule cards
- * 3. Speakers section — "Speakers" heading + LazyRow of speaker cards
- * 4. Venue info — placeholder section for venue map
- * 5. SponsorBar at bottom
- *
- * Accessibility requirements met:
- * - Minimum 18sp body text, 24sp section headings
- * - High contrast: text on surface/background colors
- * - Large touch targets on interactive elements (AssistChip)
- *
- * @param viewModel  [EventInfoViewModel] providing schedule, speakers, and sponsor data.
- * @param modifier   Optional modifier for outer layout.
+ * Event Info screen — schedule, speakers, and venue info.
  */
 @Composable
 fun EventInfoScreen(
     viewModel: EventInfoViewModel,
+    navController: NavHostController,
     modifier: Modifier = Modifier
 ) {
     val schedule by viewModel.schedule.collectAsStateWithLifecycle()
@@ -69,13 +57,16 @@ fun EventInfoScreen(
     Column(
         modifier = modifier.fillMaxSize()
     ) {
-        // ── Scrollable content ───────────────────────────────────────────────
+        SubScreenTopBar(
+            title = "Event Info",
+            onBack = { navController.popBackStack() }
+        )
+
         LazyColumn(
             modifier = Modifier.weight(1f),
             contentPadding = PaddingValues(bottom = 16.dp)
         ) {
-
-            // ── Event header ────────────────────────────────────────────────
+            // Event header
             item {
                 Column(
                     modifier = Modifier
@@ -100,7 +91,7 @@ fun EventInfoScreen(
                 }
             }
 
-            // ── Schedule section ────────────────────────────────────────────
+            // Schedule section
             item {
                 SectionHeading(
                     text = "Schedule",
@@ -126,7 +117,7 @@ fun EventInfoScreen(
                 }
             }
 
-            // ── Speakers section ────────────────────────────────────────────
+            // Speakers section
             item {
                 SectionHeading(
                     text = "Speakers",
@@ -156,7 +147,7 @@ fun EventInfoScreen(
                 }
             }
 
-            // ── Venue section ───────────────────────────────────────────────
+            // Venue section
             item {
                 SectionHeading(
                     text = "Venue",
@@ -171,14 +162,10 @@ fun EventInfoScreen(
             }
         }
 
-        // ── Sponsor bar (pinned at bottom) ───────────────────────────────────
         SponsorBar(sponsors = sponsors)
     }
 }
 
-/**
- * Bold section heading text at 24sp.
- */
 @Composable
 private fun SectionHeading(
     text: String,
@@ -193,9 +180,6 @@ private fun SectionHeading(
     )
 }
 
-/**
- * Empty state placeholder for schedule or speakers sections.
- */
 @Composable
 private fun EmptyState(
     message: String,
@@ -210,9 +194,6 @@ private fun EmptyState(
     )
 }
 
-/**
- * Schedule item card showing time (bold), title, speaker name, location, and track badge.
- */
 @Composable
 private fun ScheduleCard(
     item: ScheduleItem,
@@ -225,7 +206,6 @@ private fun ScheduleCard(
                 .padding(horizontal = 16.dp, vertical = 12.dp),
             verticalAlignment = Alignment.Top
         ) {
-            // Time column
             Text(
                 text = item.time,
                 color = MaterialTheme.colorScheme.primary,
@@ -236,7 +216,6 @@ private fun ScheduleCard(
 
             Spacer(modifier = Modifier.width(12.dp))
 
-            // Details column
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = item.title,
@@ -269,12 +248,7 @@ private fun ScheduleCard(
                     if (item.track.isNotBlank()) {
                         AssistChip(
                             onClick = {},
-                            label = {
-                                Text(
-                                    text = item.track,
-                                    fontSize = 12.sp
-                                )
-                            },
+                            label = { Text(text = item.track, fontSize = 12.sp) },
                             modifier = Modifier.height(28.dp)
                         )
                     }
@@ -284,26 +258,18 @@ private fun ScheduleCard(
     }
 }
 
-/**
- * Speaker profile card showing avatar placeholder, name, title, and short bio.
- *
- * Displayed in a horizontal LazyRow. Width is 160dp for compact display.
- */
 @Composable
 private fun SpeakerCard(
     speaker: SpeakerInfo,
     modifier: Modifier = Modifier
 ) {
-    ElevatedCard(
-        modifier = modifier.width(160.dp)
-    ) {
+    ElevatedCard(modifier = modifier.width(160.dp)) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(12.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Avatar placeholder circle
             Box(
                 modifier = Modifier
                     .size(64.dp)
@@ -321,7 +287,6 @@ private fun SpeakerCard(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Name
             Text(
                 text = speaker.name,
                 color = MaterialTheme.colorScheme.onSurface,
@@ -332,7 +297,6 @@ private fun SpeakerCard(
                 overflow = TextOverflow.Ellipsis
             )
 
-            // Title
             if (speaker.title.isNotBlank()) {
                 Text(
                     text = speaker.title,
@@ -345,7 +309,6 @@ private fun SpeakerCard(
                 )
             }
 
-            // Bio excerpt
             if (speaker.bio.isNotBlank()) {
                 Text(
                     text = speaker.bio,
@@ -361,11 +324,6 @@ private fun SpeakerCard(
     }
 }
 
-/**
- * Placeholder for venue map / location info.
- *
- * Replace with a real Image composable once venue map assets are available.
- */
 @Composable
 private fun VenueInfoPlaceholder(modifier: Modifier = Modifier) {
     Box(

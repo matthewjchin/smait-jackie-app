@@ -1,13 +1,8 @@
 <resources>
     <string name="app_name">Jackie</string>
     <string name="jackie_title">Jackie</string>
-    <string name="welcome_prefix">Welcome to the</string>
-    <string name="event_title_line1">AI Center for</string>
-    <string name="event_title_line2">Civic &amp; Social Good</string>
-    <string name="event_badge">✦  GRAND OPENING  ✦</string>
     <string name="approach_message">Step up and say hi!</string>
-    <string name="jackie_subtitle">Meet Jackie — your AI companion for today</string>
-    <string name="powered_by">AI Center for Civic &amp; Social Good Grand Opening  •  BioRob Lab  •  SJSU</string>
+    <string name="powered_by">BioRob Lab  ·  SJSU</string>
     <string name="settings_title">Connection Settings</string>
     <string name="server_ip">Server IP</string>
     <string name="server_port">Port</string>
@@ -20,15 +15,12 @@
     <string name="status_thinking">Thinking…</string>
     <string name="status_speaking">Speaking…</string>
     <string name="status_connected">Connected</string>
-    <string name="selfie_button">📸  Take a Selfie!</string>
-    <string name="selfie_retake">↻  Retake</string>
-    <string name="selfie_save">Save 📸</string>
-    <string name="live_indicator">● LIVE</string>
+    <string name="selfie_button">Take a Selfie</string>
+    <string name="selfie_retake">Retake</string>
+    <string name="selfie_save">Save</string>
+    <string name="live_indicator">LIVE</string>
     <string name="label_you">You</string>
     <string name="label_jackie">Jackie</string>
-    <string name="countdown_3">3</string>
-    <string name="countdown_2">2</string>
-    <string name="countdown_1">1</string>
     <string name="prefs_name">jackie_prefs</string>
     <string name="pref_ip">server_ip</string>
     <string name="pref_port">server_port</string>

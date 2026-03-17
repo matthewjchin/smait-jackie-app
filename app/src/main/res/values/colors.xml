@@ -3,22 +3,22 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
 
-    <!-- Light Theme - Layered Surfaces -->
-    <color name="bg_deepest">#FFFFFFFF</color>
+    <!-- BioRob Lab Brand Colors -->
+    <color name="bg_deepest">#FFF8F9FA</color>
     <color name="bg_primary">#FFFFFFFF</color>
     <color name="bg_card">#FFF5F7FA</color>
     <color name="bg_elevated">#FFEDF0F5</color>
     <color name="bg_secondary">#FFF5F7FA</color>
     <color name="bg_surface">#FFEDF0F5</color>
 
-    <!-- Accent: Vibrant Blue-Cyan -->
-    <color name="accent">#FF0066FF</color>
-    <color name="accent_blue">#FF0066FF</color>
-    <color name="accent_light">#FF00B4D8</color>
-    <color name="accent_cyan">#FF00B4D8</color>
+    <!-- Primary: BioRob Blue -->
+    <color name="accent">#FF0956A4</color>
+    <color name="accent_blue">#FF0956A4</color>
+    <color name="accent_light">#FF3D9FE0</color>
+    <color name="accent_cyan">#FF3D9FE0</color>
 
-    <!-- Secondary Accent: Amber/Gold -->
-    <color name="accent_amber">#FFFF9500</color>
+    <!-- Secondary: BioRob Gold -->
+    <color name="accent_amber">#FFE8A317</color>
 
     <!-- Text -->
     <color name="text_primary">#FF1A1A2E</color>
@@ -26,21 +26,21 @@
     <color name="text_muted">#FF9BA3B5</color>
 
     <!-- Chat Bubbles -->
-    <color name="bubble_user">#FFE8F0FE</color>
-    <color name="bubble_user_border">#FF0066FF</color>
-    <color name="bubble_robot">#FFE6F7F0</color>
-    <color name="bubble_robot_border">#FF00C896</color>
+    <color name="bubble_user">#FFE3F0FC</color>
+    <color name="bubble_user_border">#FF0956A4</color>
+    <color name="bubble_robot">#FFFDF3E0</color>
+    <color name="bubble_robot_border">#FFE8A317</color>
 
     <!-- Speaker Labels -->
-    <color name="speaker_user">#FF3366AA</color>
-    <color name="speaker_robot">#FF22AA77</color>
+    <color name="speaker_user">#FF0956A4</color>
+    <color name="speaker_robot">#FFE8A317</color>
 
     <!-- Status -->
     <color name="status_connected">#FF34C759</color>
     <color name="status_disconnected">#FFFF3B30</color>
-    <color name="status_listening">#FF00B4D8</color>
-    <color name="status_thinking">#FFFF9500</color>
-    <color name="status_speaking">#FF00C896</color>
+    <color name="status_listening">#FF0956A4</color>
+    <color name="status_thinking">#FFE8A317</color>
+    <color name="status_speaking">#FF1A3D6D</color>
 
     <!-- Selfie -->
     <color name="countdown_text">#FF1A1A2E</color>

@@ -66,28 +66,28 @@ data class ThemeConfig(
  */
 data class ThemeColors(
     @SerializedName("primary")
-    val primary: String = "#1565C0",
+    val primary: String = "#0956A4",
 
     @SerializedName("secondary")
-    val secondary: String = "#546E7A",
+    val secondary: String = "#E8A317",
 
     @SerializedName("tertiary")
-    val tertiary: String = "#78909C",
+    val tertiary: String = "#1A3D6D",
 
     @SerializedName("background")
-    val background: String = "#F5F5F5",
+    val background: String = "#F8F9FA",
 
     @SerializedName("onPrimary")
     val onPrimary: String = "#FFFFFF",
 
     @SerializedName("onBackground")
-    val onBackground: String = "#212121",
+    val onBackground: String = "#1A1A2E",
 
     @SerializedName("surface")
     val surface: String = "#FFFFFF",
 
     @SerializedName("onSurface")
-    val onSurface: String = "#212121"
+    val onSurface: String = "#1A1A2E"
 )
 
 /**

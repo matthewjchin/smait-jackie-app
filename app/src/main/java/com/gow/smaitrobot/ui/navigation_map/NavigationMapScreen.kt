@@ -33,28 +33,28 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavHostController
+import com.gow.smaitrobot.ui.common.SubScreenTopBar
 
 /**
- * Navigation Map screen.
- *
- * Layout:
- * - Top 80%: Live map image from 0x06 WebSocket frames, or placeholder while waiting
- * - Bottom 20%: Navigation status bar with destination label, progress, arrival/failure state
- *
- * Accessibility: Destination label at 24sp, status text at 18sp, minimum touch targets 60dp.
- * Map fills available width with preserved aspect ratio ([ContentScale.Fit]).
- *
- * @param viewModel [NavigationMapViewModel] providing mapBitmap and navStatus StateFlows.
+ * Navigation Map screen with back button.
  */
 @Composable
-fun NavigationMapScreen(viewModel: NavigationMapViewModel) {
+fun NavigationMapScreen(
+    viewModel: NavigationMapViewModel,
+    navController: NavHostController
+) {
     val mapBitmap: Bitmap? by viewModel.mapBitmap.collectAsState()
     val navStatus by viewModel.navStatus.collectAsState()
     val isNavigating by viewModel.isNavigating.collectAsState()
 
     Column(modifier = Modifier.fillMaxSize()) {
+        SubScreenTopBar(
+            title = "Navigation Map",
+            onBack = { navController.popBackStack() }
+        )
 
-        // ── Map display (80% of height) ────────────────────────────────────────
+        // Map display (fills remaining space minus status bar)
         Box(
             modifier = Modifier
                 .weight(0.8f)
@@ -74,9 +74,7 @@ fun NavigationMapScreen(viewModel: NavigationMapViewModel) {
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center
                 ) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(48.dp)
-                    )
+                    CircularProgressIndicator(modifier = Modifier.size(48.dp))
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(
                         text = "Waiting for map data...",
@@ -87,7 +85,7 @@ fun NavigationMapScreen(viewModel: NavigationMapViewModel) {
             }
         }
 
-        // ── Navigation status bar (bottom 20%) ────────────────────────────────
+        // Navigation status bar
         Surface(
             modifier = Modifier
                 .weight(0.2f)
@@ -177,7 +175,6 @@ fun NavigationMapScreen(viewModel: NavigationMapViewModel) {
                         }
                     }
                     else -> {
-                        // cancelled or unknown status
                         Text(
                             text = navStatus!!.destination.ifEmpty { "Ready" },
                             fontSize = 18.sp,

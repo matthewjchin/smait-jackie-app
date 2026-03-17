@@ -1,33 +1,20 @@
 package com.gow.smaitrobot.navigation
 
-import androidx.compose.foundation.layout.Box
+import android.os.Build
+import android.util.Log
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Chat
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.LocationOn
-import androidx.compose.material.icons.filled.Map
-import androidx.compose.material3.Icon
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import androidx.navigation.compose.currentBackStackEntryAsState
 import com.gow.smaitrobot.CaeAudioManager
+import com.gow.smaitrobot.StandardAudioManager
 import com.gow.smaitrobot.TtsAudioPlayer
 import com.gow.smaitrobot.data.model.ThemeConfig
 import com.gow.smaitrobot.jackieApp
@@ -43,22 +30,16 @@ import com.gow.smaitrobot.ui.home.HomeViewModel
 import com.gow.smaitrobot.ui.navigation_map.NavigationMapScreen
 import com.gow.smaitrobot.ui.navigation_map.NavigationMapViewModel
 
+private const val TAG = "AppNavigation"
+
 /**
- * Root Composable that provides the 5-tab bottom navigation scaffold and NavHost.
- *
- * Renders a [Scaffold] with a persistent [NavigationBar] at the bottom and a
- * [NavHost] that hosts 5 placeholder screens. Later plans (03–05) replace the
- * placeholder composables with fully-implemented screens.
- *
- * Navigation behavior:
- * - Each tab uses `popUpTo(Home) { saveState = true }` + `launchSingleTop = true`
- *   + `restoreState = true` so back-stack is kept lean and screen state is preserved.
- * - The bottom nav bar is always visible (never hidden).
- * - 60dp minimum touch target height on nav bar items for kiosk UX accessibility.
- *
- * @param navController  NavHostController created by the caller via [rememberNavController].
- * @param themeConfig    Active theme config from [ThemeRepository]; passed to screens.
+ * Server URL for WebSocket connection.
+ * - Emulator: 10.0.2.2 maps to the host machine's localhost
+ * - Jackie: use the lab PC's IP address on the WiFi network
  */
+private const val EMULATOR_WS_URL = "ws://10.0.2.2:8765"
+private const val JACKIE_WS_URL = "ws://192.168.1.100:8765" // Override per-lab
+
 @Composable
 fun AppScaffold(
     navController: NavHostController,
@@ -67,29 +48,39 @@ fun AppScaffold(
     val context = LocalContext.current
     val wsRepo = context.jackieApp.webSocketRepository
     val themeRepo = context.jackieApp.themeRepository
+    val isEmulator = remember { isEmulatorDevice() }
 
     val homeViewModel: HomeViewModel = viewModel(
-        factory = androidx.lifecycle.ViewModelProvider.Factory {
-            HomeViewModel(themeRepo)
+        factory = object : androidx.lifecycle.ViewModelProvider.Factory {
+            @Suppress("UNCHECKED_CAST")
+            override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T =
+                HomeViewModel(themeRepo) as T
         }
     )
     val eventInfoViewModel: EventInfoViewModel = viewModel(
-        factory = androidx.lifecycle.ViewModelProvider.Factory {
-            EventInfoViewModel(themeRepo)
+        factory = object : androidx.lifecycle.ViewModelProvider.Factory {
+            @Suppress("UNCHECKED_CAST")
+            override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T =
+                EventInfoViewModel(themeRepo) as T
         }
     )
     val navMapViewModel: NavigationMapViewModel = viewModel(
-        factory = androidx.lifecycle.ViewModelProvider.Factory {
-            NavigationMapViewModel(wsRepo)
+        factory = object : androidx.lifecycle.ViewModelProvider.Factory {
+            @Suppress("UNCHECKED_CAST")
+            override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T =
+                NavigationMapViewModel(wsRepo) as T
         }
     )
     val facilitiesViewModel: FacilitiesViewModel = viewModel(
-        factory = androidx.lifecycle.ViewModelProvider.Factory {
-            FacilitiesViewModel(wsRepo)
+        factory = object : androidx.lifecycle.ViewModelProvider.Factory {
+            @Suppress("UNCHECKED_CAST")
+            override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T =
+                FacilitiesViewModel(wsRepo) as T
         }
     )
     val ttsPlayer = remember { TtsAudioPlayer().also { it.start() } }
     val caeAudioManager = remember { CaeAudioManager(context) }
+    val standardAudioManager = remember { if (isEmulator) StandardAudioManager() else null }
     val videoStreamManager = remember { VideoStreamManager(wsRepo) }
     val conversationViewModel = remember {
         ConversationViewModel(
@@ -100,88 +91,72 @@ fun AppScaffold(
         )
     }
 
-    val backStackEntry by navController.currentBackStackEntryAsState()
-    val currentRoute = backStackEntry?.destination?.route
+    // Auto-connect WebSocket on launch
+    LaunchedEffect(Unit) {
+        val url = if (isEmulator) EMULATOR_WS_URL else JACKIE_WS_URL
+        Log.i(TAG, "Connecting WebSocket to $url (emulator=$isEmulator)")
+        wsRepo.connect(url)
+    }
 
-    Scaffold(
-        bottomBar = {
-            NavigationBar {
-                Screen.navBarItems.forEach { screen ->
-                    val routeName = screen::class.qualifiedName ?: screen::class.simpleName
-                    val isSelected = currentRoute?.contains(screen::class.simpleName ?: "") == true
-
-                    NavigationBarItem(
-                        selected = isSelected,
-                        onClick = {
-                            navController.navigate(screen) {
-                                popUpTo(Screen.Home) {
-                                    saveState = true
-                                }
-                                launchSingleTop = true
-                                restoreState = true
-                            }
-                        },
-                        icon = {
-                            Icon(
-                                imageVector = screenIcon(screen),
-                                contentDescription = screen.label
-                            )
-                        },
-                        label = { Text(screen.label) },
-                        modifier = Modifier.padding(vertical = 8.dp) // contributes to 60dp+ touch target
-                    )
-                }
-            }
+    // Start audio + video capture on launch
+    LaunchedEffect(Unit) {
+        if (isEmulator) {
+            standardAudioManager?.setWriterCallback { bytes -> wsRepo.send(bytes) }
+            standardAudioManager?.start()
+            Log.i(TAG, "Started StandardAudioManager for emulator")
         }
-    ) { paddingValues ->
-        NavHost(
-            navController = navController,
-            startDestination = Screen.Home,
-            modifier = Modifier.padding(paddingValues)
-        ) {
-            composable<Screen.Home> {
-                HomeScreen(viewModel = homeViewModel, navController = navController)
-            }
-            composable<Screen.Chat> {
-                ConversationScreen(viewModel = conversationViewModel, navController = navController)
-            }
-            composable<Screen.Map> {
-                NavigationMapScreen(viewModel = navMapViewModel)
-            }
-            composable<Screen.Facilities> {
-                FacilitiesScreen(viewModel = facilitiesViewModel)
-            }
-            composable<Screen.EventInfo> {
-                EventInfoScreen(viewModel = eventInfoViewModel)
-            }
+        videoStreamManager.start(context)
+        Log.i(TAG, "Started VideoStreamManager")
+    }
+
+    // Cleanup on dispose
+    DisposableEffect(Unit) {
+        onDispose {
+            standardAudioManager?.stop()
+            videoStreamManager.stop()
+            wsRepo.disconnect()
         }
     }
-}
 
-/**
- * Placeholder screen composable used until the real screen is implemented in plans 03–05.
- * Each screen name is displayed centered in the available space.
- */
-@Composable
-private fun PlaceholderScreen(name: String) {
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
+    // No Scaffold/bottom bar — just NavHost filling the screen.
+    // Sub-screens use their own top bar with a back/home button.
+    NavHost(
+        navController = navController,
+        startDestination = Screen.Home,
+        modifier = Modifier.fillMaxSize()
     ) {
-        Text(text = name)
+        composable<Screen.Home> {
+            HomeScreen(viewModel = homeViewModel, navController = navController)
+        }
+        composable<Screen.Chat> {
+            ConversationScreen(viewModel = conversationViewModel, navController = navController)
+        }
+        composable<Screen.Map> {
+            NavigationMapScreen(viewModel = navMapViewModel, navController = navController)
+        }
+        composable<Screen.Facilities> {
+            FacilitiesScreen(viewModel = facilitiesViewModel, navController = navController)
+        }
+        composable<Screen.EventInfo> {
+            EventInfoScreen(viewModel = eventInfoViewModel, navController = navController)
+        }
     }
 }
 
 /**
- * Maps a [Screen] to its Material Icons [ImageVector].
- *
- * Kept in the Compose layer (not in [Screen]) so [Screen] remains free of
- * Compose dependencies and can be used in plain JVM unit tests.
+ * Detects whether the app is running on an Android emulator.
  */
-fun screenIcon(screen: Screen): ImageVector = when (screen) {
-    is Screen.Home -> Icons.Filled.Home
-    is Screen.Chat -> Icons.Filled.Chat
-    is Screen.Map -> Icons.Filled.Map
-    is Screen.Facilities -> Icons.Filled.LocationOn
-    is Screen.EventInfo -> Icons.Filled.Info
+private fun isEmulatorDevice(): Boolean {
+    return (Build.FINGERPRINT.startsWith("generic")
+            || Build.FINGERPRINT.startsWith("unknown")
+            || Build.MODEL.contains("google_sdk")
+            || Build.MODEL.contains("Emulator")
+            || Build.MODEL.contains("Android SDK built for x86")
+            || Build.MODEL.contains("sdk_gphone")
+            || Build.MANUFACTURER.contains("Genymotion")
+            || Build.BRAND.startsWith("generic")
+            || Build.DEVICE.startsWith("generic")
+            || Build.PRODUCT.contains("sdk")
+            || Build.HARDWARE.contains("goldfish")
+            || Build.HARDWARE.contains("ranchu"))
 }

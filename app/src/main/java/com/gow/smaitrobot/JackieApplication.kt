@@ -41,10 +41,10 @@ class JackieApplication : Application() {
         webSocketRepository = WebSocketRepository(okHttpClient)
         themeRepository = ThemeRepository(this)
 
-        // Load WiE 2026 theme synchronously — required before the first frame is rendered.
+        // Load default BioRob theme synchronously — required before the first frame is rendered.
         // loadSync() uses IO on the calling thread; acceptable in Application.onCreate()
         // since it runs before any Activity starts.
-        themeRepository.loadSync("wie2026_theme.json")
+        themeRepository.loadSync("default_theme.json")
     }
 }
 
