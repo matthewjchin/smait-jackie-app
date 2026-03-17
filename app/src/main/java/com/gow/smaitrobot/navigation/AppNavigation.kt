@@ -29,6 +29,7 @@ import com.gow.smaitrobot.ui.home.HomeScreen
 import com.gow.smaitrobot.ui.home.HomeViewModel
 import com.gow.smaitrobot.ui.navigation_map.NavigationMapScreen
 import com.gow.smaitrobot.ui.navigation_map.NavigationMapViewModel
+import com.gow.smaitrobot.ui.settings.SettingsScreen
 
 private const val TAG = "AppNavigation"
 
@@ -139,6 +140,9 @@ fun AppScaffold(
         }
         composable<Screen.EventInfo> {
             EventInfoScreen(viewModel = eventInfoViewModel, navController = navController)
+        }
+        composable<Screen.Settings> {
+            SettingsScreen(navController = navController)
         }
     }
 }

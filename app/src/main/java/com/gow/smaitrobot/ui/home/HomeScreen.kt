@@ -19,6 +19,7 @@ import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Map
 import androidx.compose.material.icons.filled.Schedule
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ElevatedCard
@@ -208,6 +209,7 @@ private fun cardIcon(iconName: String): ImageVector = when (iconName) {
     "schedule" -> Icons.Filled.Schedule
     "location" -> Icons.Filled.LocationOn
     "info" -> Icons.Filled.Info
+    "settings" -> Icons.Filled.Settings
     else -> Icons.Filled.Info
 }
 

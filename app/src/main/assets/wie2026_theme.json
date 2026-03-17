@@ -52,6 +52,12 @@
       "action": "navigate:eventinfo",
       "icon": "info",
       "description": "Venue map, WiFi, schedule, and general info"
+    },
+    {
+      "label": "Settings",
+      "action": "navigate:settings",
+      "icon": "settings",
+      "description": "Volume control and system settings"
     }
   ],
   "sponsors": [

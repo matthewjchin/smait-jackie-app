@@ -29,9 +29,9 @@ fun TopLogoBar(
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .height(80.dp)
+            .height(240.dp)
             .background(MaterialTheme.colorScheme.surface)
-            .padding(horizontal = 24.dp, vertical = 8.dp),
+            .padding(horizontal = 24.dp, vertical = 12.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -39,7 +39,7 @@ fun TopLogoBar(
         Image(
             painter = painterResource(id = R.drawable.sjsu_logo),
             contentDescription = "SJSU Mechanical Engineering Logo",
-            modifier = Modifier.height(64.dp),
+            modifier = Modifier.height(200.dp),
             contentScale = ContentScale.Fit
         )
 
@@ -47,7 +47,7 @@ fun TopLogoBar(
         Image(
             painter = painterResource(id = R.drawable.biorob_logo),
             contentDescription = "BioRob Lab Logo",
-            modifier = Modifier.height(56.dp),
+            modifier = Modifier.height(180.dp),
             contentScale = ContentScale.Fit
         )
     }
