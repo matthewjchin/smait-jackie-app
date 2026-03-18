@@ -27,7 +27,7 @@ import org.json.JSONObject
 import java.util.UUID
 
 private const val TAG = "ConversationVM"
-private const val SILENCE_TIMEOUT_MS = 30_000L
+private const val SILENCE_TIMEOUT_MS = 120_000L  // 2 min — navigation can take a while
 
 /**
  * ViewModel for the Conversation screen.
