@@ -260,6 +260,14 @@ class CaeAudioManager(private val context: Context) {
             // Default -1 = "wait for wake word" which blocks onAudio callback (Pitfall 1).
             com.iflytek.iflyos.cae.CAE.CAESetRealBeam(0)
 
+            // Auto-fix ALSA permissions (resets on reboot, no adb needed)
+            try {
+                Runtime.getRuntime().exec("chmod 666 /dev/snd/pcmC${PCM_CARD}D${PCM_DEVICE}c").waitFor()
+                Log.i(TAG, "ALSA permissions set for pcmC${PCM_CARD}D${PCM_DEVICE}c")
+            } catch (e: Exception) {
+                Log.w(TAG, "Could not set ALSA permissions (non-fatal): ${e.message}")
+            }
+
             // Create ALSA recorder instance for USB mic array (Bothlent UAC Dongle)
             alsaRecorder = AlsaRecorder.createInstance(
                 PCM_CARD,
