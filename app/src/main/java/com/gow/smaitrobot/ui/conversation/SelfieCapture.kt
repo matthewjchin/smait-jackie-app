@@ -78,6 +78,7 @@ fun SelfieCapture(
     onCapture: (Bitmap) -> Unit
 ) {
     val context = LocalContext.current
+    var countdownStarted by remember { mutableStateOf(false) }
     var countdownValue by remember { mutableIntStateOf(3) }
     var capturedBitmap by remember { mutableStateOf<Bitmap?>(null) }
     var showFlash by remember { mutableStateOf(false) }
@@ -134,8 +135,22 @@ fun SelfieCapture(
                 modifier = Modifier.fillMaxSize()
             )
 
+            // Before countdown: show capture button
+            if (!countdownStarted) {
+                Button(
+                    onClick = { countdownStarted = true },
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .padding(32.dp)
+                        .height(72.dp)
+                        .width(200.dp)
+                ) {
+                    Text("Take Photo", fontSize = 22.sp)
+                }
+            }
+
             // 3-2-1 countdown overlay
-            if (countdownValue > 0) {
+            if (countdownStarted && countdownValue > 0) {
                 Box(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
@@ -148,7 +163,7 @@ fun SelfieCapture(
                     )
                 }
 
-                LaunchedEffect(Unit) {
+                LaunchedEffect(countdownStarted) {
                     for (i in 3 downTo 1) {
                         countdownValue = i
                         delay(1_000L)
@@ -220,6 +235,7 @@ fun SelfieCapture(
                     onClick = {
                         capturedBitmap = null
                         countdownValue = 3
+                        countdownStarted = false
                     },
                     modifier = Modifier.height(60.dp).weight(1f)
                 ) {
