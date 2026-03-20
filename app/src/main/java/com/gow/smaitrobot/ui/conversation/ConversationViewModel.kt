@@ -258,8 +258,10 @@ class ConversationViewModel(
                 appendMessage(ChatMessage(id = UUID.randomUUID().toString(), text = text, isUser = false))
             }
             "state" -> {
-                val value = parseTextField(payload, "value") ?: return
-                val newState = mapRobotState(value)
+                // Server sends: {"type":"state", "state":"idle"|"engaged", "robot_status":"listening"|...}
+                val sessionState = parseTextField(payload, "state") ?: "engaged"
+                val robotStatus = parseTextField(payload, "robot_status") ?: "listening"
+                val newState = if (sessionState == "idle") RobotState.IDLE else mapRobotState(robotStatus)
                 val prevState = _robotState.value
 
                 _robotState.value = newState
@@ -267,7 +269,7 @@ class ConversationViewModel(
                 if (newState != RobotState.IDLE) {
                     wasConversing = true
                 } else if (wasConversing && prevState != RobotState.IDLE) {
-                    // Transitioned from active -> idle: show survey instead of ending immediately
+                    // Session ended (goodbye or server timeout): show survey
                     _showSurvey.value = true
                 }
             }
