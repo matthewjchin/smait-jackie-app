@@ -1,20 +1,21 @@
 package com.gow.smaitrobot.ui.home
 
-import android.content.Intent
-import android.net.Uri
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Chat
@@ -23,13 +24,13 @@ import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Map
 import androidx.compose.material.icons.filled.Schedule
+import androidx.compose.material.icons.filled.PhotoCamera
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -41,7 +42,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -49,19 +52,31 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
+import com.gow.smaitrobot.R
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.draw.clip
 import com.gow.smaitrobot.data.model.CardConfig
+import com.gow.smaitrobot.data.model.SpeakerInfo
+import com.gow.smaitrobot.navigation.Screen
 import com.gow.smaitrobot.ui.common.SponsorBar
 import com.gow.smaitrobot.ui.common.TopLogoBar
+import com.gow.smaitrobot.ui.common.WieBackground
+
+// WiE slide colors
+private val WieNavy = Color(0xFF1B0A6E)
+private val WieTeal = Color(0xFF00A99D)
+private val CardPurple = Color(0xFF2D1B69)
+private val CardTeal = Color(0xFF007C87)
 
 /**
  * Home screen — the primary landing screen on Jackie's kiosk display.
  *
- * Layout (top to bottom):
- * 1. [TopLogoBar] — SJSU + BioRob logos
- * 2. Event name (32sp bold) + tagline (20sp)
- * 3. Card grid — 3-column grid of solid-color cards (iFLYTEK-inspired)
- * 4. [SponsorBar] — sponsor logos at the bottom
+ * Layout:
+ * 1. Top: Logo bar (SJSU | WiE | BioRob) — long press opens hidden Settings
+ * 2. Middle: WiE conference graphic (left) + 4 cards in 2x2 grid (right)
+ * 3. Bottom: Sponsor bar
  */
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun HomeScreen(
     viewModel: HomeViewModel,
@@ -72,117 +87,173 @@ fun HomeScreen(
     val eventName by viewModel.eventName.collectAsStateWithLifecycle()
     val tagline by viewModel.tagline.collectAsStateWithLifecycle()
     val sponsors by viewModel.sponsors.collectAsStateWithLifecycle()
-    val context = LocalContext.current
+    val speakers by viewModel.speakers.collectAsStateWithLifecycle()
 
     var inlineContentKey by remember { mutableStateOf<String?>(null) }
 
-    Column(
-        modifier = modifier.fillMaxSize()
-    ) {
-        // 1. Top logo bar
-        TopLogoBar()
-
-        // 2. Event name + tagline
+    WieBackground(modifier = modifier) {
         Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 24.dp, vertical = 12.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+            modifier = Modifier.fillMaxSize()
         ) {
-            Text(
-                text = eventName,
-                color = MaterialTheme.colorScheme.primary,
-                fontSize = 32.sp,
-                fontWeight = FontWeight.Bold,
-                textAlign = TextAlign.Center
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = tagline,
-                color = MaterialTheme.colorScheme.onBackground,
-                fontSize = 20.sp,
-                textAlign = TextAlign.Center
-            )
-        }
-
-        // 3. Card grid — solid color cards
-        LazyVerticalGrid(
-            columns = GridCells.Fixed(3),
-            modifier = Modifier
-                .weight(1f)
-                .fillMaxWidth()
-                .padding(horizontal = 20.dp),
-            contentPadding = PaddingValues(8.dp),
-            horizontalArrangement = Arrangement.spacedBy(14.dp),
-            verticalArrangement = Arrangement.spacedBy(14.dp)
-        ) {
-            items(cards) { card ->
-                HomeCard(
-                    card = card,
-                    onClick = {
-                        when (val action = viewModel.parseCardAction(card.action)) {
-                            is CardAction.NavigateToTab -> {
-                                navController.navigate(action.screen) {
-                                    popUpTo(
-                                        navController.graph.startDestinationId
-                                    ) {
-                                        saveState = true
-                                    }
-                                    launchSingleTop = true
-                                    restoreState = true
-                                }
-                            }
-                            is CardAction.ShowInlineContent -> {
-                                inlineContentKey = action.contentKey
-                            }
-                            is CardAction.OpenUrl -> {
-                                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(action.url))
-                                context.startActivity(intent)
-                            }
+            // 1. Top logo bar — long press to open hidden Settings
+            TopLogoBar(
+                modifier = Modifier.combinedClickable(
+                    onClick = {},
+                    onLongClick = {
+                        navController.navigate(Screen.Settings) {
+                            launchSingleTop = true
                         }
                     }
                 )
-            }
-        }
+            )
 
-        // 4. Sponsor bar
-        SponsorBar(sponsors = sponsors)
+            // 2. Main content: WiE graphic (left) + cards (right)
+            Row(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // Left: WiE conference graphic
+                Image(
+                    painter = painterResource(id = R.drawable.wie_conference_graphic),
+                    contentDescription = "WiE Conference — Engineering Beyond Imagination",
+                    modifier = Modifier
+                        .weight(0.38f)
+                        .fillMaxHeight()
+                        .padding(8.dp),
+                    contentScale = ContentScale.Fit
+                )
+
+                Spacer(modifier = Modifier.width(12.dp))
+
+                // Right: 2x2 card grid — each row gets equal vertical space
+                Column(
+                    modifier = Modifier
+                        .weight(0.62f)
+                        .fillMaxHeight(),
+                    verticalArrangement = Arrangement.spacedBy(10.dp, Alignment.CenterVertically)
+                ) {
+                    // Top row
+                    Row(
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        cards.getOrNull(0)?.let { card ->
+                            HomeCard(
+                                card = card,
+                                cardIndex = 0,
+                                onClick = { handleCardClick(card, viewModel, navController) { inlineContentKey = it } },
+                                modifier = Modifier.weight(1f).fillMaxHeight()
+                            )
+                        }
+                        cards.getOrNull(1)?.let { card ->
+                            HomeCard(
+                                card = card,
+                                cardIndex = 1,
+                                onClick = { handleCardClick(card, viewModel, navController) { inlineContentKey = it } },
+                                modifier = Modifier.weight(1f).fillMaxHeight()
+                            )
+                        }
+                    }
+                    // Bottom row
+                    Row(
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        cards.getOrNull(2)?.let { card ->
+                            HomeCard(
+                                card = card,
+                                cardIndex = 2,
+                                onClick = { handleCardClick(card, viewModel, navController) { inlineContentKey = it } },
+                                modifier = Modifier.weight(1f).fillMaxHeight()
+                            )
+                        }
+                        cards.getOrNull(3)?.let { card ->
+                            HomeCard(
+                                card = card,
+                                cardIndex = 3,
+                                onClick = { handleCardClick(card, viewModel, navController) { inlineContentKey = it } },
+                                modifier = Modifier.weight(1f).fillMaxHeight()
+                            )
+                        }
+                    }
+                }
+            }
+
+            // 4. Sponsor bar
+            SponsorBar(sponsors = sponsors)
+        }
     }
 
-    // Inline content dialog
-    inlineContentKey?.let { key ->
-        InlineContentDialog(
-            contentKey = key,
+    // Keynote info dialog
+    if (inlineContentKey == "keynote") {
+        KeynoteDialog(
+            speakers = speakers,
             onDismiss = { inlineContentKey = null }
         )
     }
 }
 
+private fun handleCardClick(
+    card: CardConfig,
+    viewModel: HomeViewModel,
+    navController: NavHostController,
+    onInlineContent: (String) -> Unit
+) {
+    when (val action = viewModel.parseCardAction(card.action)) {
+        is CardAction.NavigateToTab -> {
+            navController.navigate(action.screen) {
+                popUpTo(navController.graph.startDestinationId) { saveState = true }
+                launchSingleTop = true
+                restoreState = true
+            }
+        }
+        is CardAction.ShowInlineContent -> {
+            onInlineContent(action.contentKey)
+        }
+        is CardAction.OpenUrl -> {
+            // Open in-app WebView instead of external browser
+            navController.navigate(Screen.Web(url = action.url)) {
+                launchSingleTop = true
+            }
+        }
+    }
+}
+
 /**
- * Home screen card — solid color background, white text, rounded corners.
- * Inspired by iFLYTEK Jackie default app design.
+ * Home screen card — WiE-themed with alternating purple/teal.
  */
 @Composable
 private fun HomeCard(
     card: CardConfig,
+    cardIndex: Int,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    // Alternating: purple, teal, teal, purple — diagonal pattern
+    val cardColor = if (cardIndex == 0 || cardIndex == 3) {
+        CardPurple.copy(alpha = 0.85f)
+    } else {
+        CardTeal.copy(alpha = 0.85f)
+    }
+
     Card(
         onClick = onClick,
-        modifier = modifier
-            .fillMaxWidth()
-            .heightIn(min = 130.dp),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = Color(0xFF5BA0D9)
-        ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+        modifier = modifier.padding(2.dp),
+        shape = RoundedCornerShape(18.dp),
+        colors = CardDefaults.cardColors(containerColor = cardColor),
+        elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(16.dp),
+                .padding(20.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
@@ -190,26 +261,28 @@ private fun HomeCard(
                 imageVector = cardIcon(card.icon),
                 contentDescription = card.label,
                 tint = Color.White.copy(alpha = 0.9f),
-                modifier = Modifier.size(32.dp)
+                modifier = Modifier.size(60.dp)
             )
-            Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(8.dp))
             Text(
                 text = card.label,
                 color = Color.White,
-                fontSize = 19.sp,
+                fontSize = 42.sp,
                 fontWeight = FontWeight.Bold,
                 textAlign = TextAlign.Center,
-                maxLines = 2
+                maxLines = 2,
+                lineHeight = 46.sp
             )
             if (card.description.isNotBlank()) {
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "\"${card.description}\"",
-                    color = Color.White.copy(alpha = 0.75f),
-                    fontSize = 12.sp,
+                    text = card.description,
+                    color = Color.White.copy(alpha = 0.7f),
+                    fontSize = 22.sp,
                     textAlign = TextAlign.Center,
                     maxLines = 2,
-                    overflow = TextOverflow.Ellipsis
+                    overflow = TextOverflow.Ellipsis,
+                    lineHeight = 26.sp
                 )
             }
         }
@@ -225,32 +298,83 @@ private fun cardIcon(iconName: String): ImageVector = when (iconName) {
     "info" -> Icons.Filled.Info
     "settings" -> Icons.Filled.Settings
     "web" -> Icons.Filled.Language
+    "camera" -> Icons.Filled.PhotoCamera
     else -> Icons.Filled.Info
 }
 
 @Composable
-private fun InlineContentDialog(
-    contentKey: String,
+private fun KeynoteDialog(
+    speakers: List<SpeakerInfo>,
     onDismiss: () -> Unit
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
         title = {
             Text(
-                text = contentKey.replaceFirstChar { it.uppercase() },
-                fontSize = 24.sp,
-                fontWeight = FontWeight.Bold
+                text = "Keynote Speakers",
+                fontSize = 36.sp,
+                fontWeight = FontWeight.ExtraBold,
+                color = WieNavy
             )
         },
         text = {
-            Text(
-                text = "Detailed $contentKey information will be displayed here.",
-                fontSize = 18.sp
-            )
+            Column(
+                verticalArrangement = Arrangement.spacedBy(20.dp)
+            ) {
+                if (speakers.isEmpty()) {
+                    Text(
+                        text = "Speaker details coming soon.",
+                        fontSize = 26.sp,
+                        color = WieNavy.copy(alpha = 0.6f)
+                    )
+                } else {
+                    speakers.forEach { speaker ->
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            // Initial circle
+                            Box(
+                                modifier = Modifier
+                                    .size(64.dp)
+                                    .clip(CircleShape)
+                                    .background(CardTeal.copy(alpha = 0.2f)),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = speaker.name.take(1),
+                                    fontSize = 32.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = CardTeal
+                                )
+                            }
+                            Spacer(modifier = Modifier.width(16.dp))
+                            Column {
+                                Text(
+                                    text = speaker.name,
+                                    fontSize = 28.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = WieNavy
+                                )
+                                Text(
+                                    text = speaker.title,
+                                    fontSize = 22.sp,
+                                    color = WieTeal
+                                )
+                                if (speaker.bio.isNotBlank()) {
+                                    Text(
+                                        text = speaker.bio,
+                                        fontSize = 20.sp,
+                                        color = WieNavy.copy(alpha = 0.6f),
+                                        modifier = Modifier.padding(top = 4.dp)
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         },
         confirmButton = {
             TextButton(onClick = onDismiss) {
-                Text("Close", fontSize = 18.sp)
+                Text("Close", fontSize = 26.sp, color = WieTeal)
             }
         }
     )

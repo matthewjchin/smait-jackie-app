@@ -17,13 +17,14 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 /**
  * Top bar for sub-screens with a back arrow and title.
- * Replaces the bottom nav bar as the navigation mechanism.
+ * Semi-transparent to blend with the WiE gradient background.
  */
 @Composable
 fun SubScreenTopBar(
@@ -34,9 +35,9 @@ fun SubScreenTopBar(
     Surface(
         modifier = modifier
             .fillMaxWidth()
-            .height(56.dp),
-        color = MaterialTheme.colorScheme.surface,
-        tonalElevation = 2.dp
+            .height(72.dp),
+        color = Color.White.copy(alpha = 0.7f),
+        tonalElevation = 0.dp
     ) {
         Row(
             modifier = Modifier
@@ -46,20 +47,21 @@ fun SubScreenTopBar(
         ) {
             IconButton(
                 onClick = onBack,
-                modifier = Modifier.size(48.dp)
+                modifier = Modifier.size(56.dp)
             ) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                     contentDescription = "Back to Home",
-                    tint = MaterialTheme.colorScheme.primary
+                    tint = Color(0xFF1B0A6E),
+                    modifier = Modifier.size(32.dp)
                 )
             }
-            Spacer(modifier = Modifier.width(4.dp))
+            Spacer(modifier = Modifier.width(8.dp))
             Text(
                 text = title,
-                color = MaterialTheme.colorScheme.onSurface,
-                fontSize = 22.sp,
-                fontWeight = FontWeight.SemiBold
+                color = Color(0xFF1B0A6E),
+                fontSize = 32.sp,
+                fontWeight = FontWeight.Bold
             )
         }
     }

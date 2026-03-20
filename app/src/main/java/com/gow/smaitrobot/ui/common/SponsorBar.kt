@@ -61,7 +61,7 @@ private fun StaticRow(
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .height(56.dp)
+            .height(100.dp)
             .background(MaterialTheme.colorScheme.surfaceVariant)
             .padding(horizontal = 16.dp),
         horizontalArrangement = Arrangement.SpaceEvenly,
@@ -100,7 +100,7 @@ private fun MarqueeRow(
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .height(56.dp)
+            .height(100.dp)
             .background(MaterialTheme.colorScheme.surfaceVariant)
             .clipToBounds()
     ) {
@@ -142,7 +142,7 @@ private fun LogoStrip(
         sponsors.forEach { sponsor ->
             SponsorLogo(
                 sponsor = sponsor,
-                modifier = Modifier.padding(horizontal = 24.dp)
+                modifier = Modifier.padding(horizontal = 32.dp)
             )
         }
     }
@@ -162,8 +162,8 @@ private fun SponsorLogo(
             painter = painterResource(id = resId),
             contentDescription = "${sponsor.name} logo",
             modifier = modifier
-                .height(36.dp)
-                .widthIn(max = 120.dp),
+                .height(72.dp)
+                .widthIn(max = 240.dp),
             contentScale = ContentScale.Fit
         )
     }

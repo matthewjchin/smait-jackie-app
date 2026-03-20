@@ -17,8 +17,9 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Slider
@@ -43,18 +44,19 @@ import androidx.navigation.NavHostController
 import com.gow.smaitrobot.data.websocket.WebSocketRepository
 import com.gow.smaitrobot.jackieApp
 import com.gow.smaitrobot.ui.common.SubScreenTopBar
+import com.gow.smaitrobot.ui.common.WieBackground
 
 private const val PREFS_NAME = "smait_settings"
 private const val KEY_VOLUME = "tts_volume"
 private const val KEY_SERVER_IP = "server_ip"
 private const val KEY_SERVER_PORT = "server_port"
 
+private val WieNavy = Color(0xFF1B0A6E)
+private val WieTeal = Color(0xFF00A99D)
+
 /**
  * Settings screen with server connection and TTS volume control.
- *
- * - Server IP/port input with Connect/Disconnect buttons and live status dot
- * - Volume slider controlling TTS AudioTrack gain directly (bypasses broken system volume)
- * - All settings persisted to SharedPreferences
+ * WiE gradient background with semi-transparent cards.
  */
 @Composable
 fun SettingsScreen(
@@ -64,26 +66,46 @@ fun SettingsScreen(
     val context = LocalContext.current
     val wsRepo = context.jackieApp.webSocketRepository
 
-    Column(
-        modifier = modifier.fillMaxSize()
-    ) {
-        SubScreenTopBar(
-            title = "Settings",
-            onBack = { navController.popBackStack() }
-        )
-
+    WieBackground(modifier = modifier) {
         Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 32.dp, vertical = 24.dp)
+            modifier = Modifier.fillMaxSize()
         ) {
-            ServerConnectionSection(wsRepo = wsRepo, context = context)
+            SubScreenTopBar(
+                title = "Settings",
+                onBack = { navController.popBackStack() }
+            )
 
-            Spacer(modifier = Modifier.height(24.dp))
-            HorizontalDivider()
-            Spacer(modifier = Modifier.height(24.dp))
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 32.dp, vertical = 24.dp)
+            ) {
+                Card(
+                    colors = CardDefaults.cardColors(
+                        containerColor = Color.White.copy(alpha = 0.85f)
+                    ),
+                    shape = RoundedCornerShape(16.dp),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                ) {
+                    Column(modifier = Modifier.padding(24.dp)) {
+                        ServerConnectionSection(wsRepo = wsRepo, context = context)
+                    }
+                }
 
-            VolumeSection(context = context)
+                Spacer(modifier = Modifier.height(24.dp))
+
+                Card(
+                    colors = CardDefaults.cardColors(
+                        containerColor = Color.White.copy(alpha = 0.85f)
+                    ),
+                    shape = RoundedCornerShape(16.dp),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                ) {
+                    Column(modifier = Modifier.padding(24.dp)) {
+                        VolumeSection(context = context)
+                    }
+                }
+            }
         }
     }
 }
@@ -98,32 +120,32 @@ private fun ServerConnectionSection(wsRepo: WebSocketRepository, context: Contex
 
     Text(
         text = "Server Connection",
-        color = MaterialTheme.colorScheme.onBackground,
-        fontSize = 22.sp,
+        color = WieNavy,
+        fontSize = 30.sp,
         fontWeight = FontWeight.Bold
     )
 
-    Spacer(modifier = Modifier.height(12.dp))
+    Spacer(modifier = Modifier.height(16.dp))
 
     Row(
         verticalAlignment = Alignment.CenterVertically
     ) {
         Box(
             modifier = Modifier
-                .size(12.dp)
+                .size(16.dp)
                 .clip(CircleShape)
                 .background(if (isConnected) Color(0xFF4CAF50) else Color(0xFFF44336))
         )
-        Spacer(modifier = Modifier.width(8.dp))
+        Spacer(modifier = Modifier.width(12.dp))
         Text(
             text = if (isConnected) "Connected" else "Disconnected",
             color = if (isConnected) Color(0xFF4CAF50) else Color(0xFFF44336),
-            fontSize = 16.sp,
+            fontSize = 24.sp,
             fontWeight = FontWeight.Medium
         )
     }
 
-    Spacer(modifier = Modifier.height(16.dp))
+    Spacer(modifier = Modifier.height(20.dp))
 
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -132,22 +154,24 @@ private fun ServerConnectionSection(wsRepo: WebSocketRepository, context: Contex
         OutlinedTextField(
             value = ipAddress,
             onValueChange = { ipAddress = it },
-            label = { Text("Server IP") },
+            label = { Text("Server IP", fontSize = 20.sp) },
             modifier = Modifier.weight(2f),
             singleLine = true,
-            shape = RoundedCornerShape(12.dp)
+            shape = RoundedCornerShape(12.dp),
+            textStyle = androidx.compose.ui.text.TextStyle(fontSize = 22.sp)
         )
         OutlinedTextField(
             value = port,
             onValueChange = { port = it },
-            label = { Text("Port") },
+            label = { Text("Port", fontSize = 20.sp) },
             modifier = Modifier.weight(1f),
             singleLine = true,
-            shape = RoundedCornerShape(12.dp)
+            shape = RoundedCornerShape(12.dp),
+            textStyle = androidx.compose.ui.text.TextStyle(fontSize = 22.sp)
         )
     }
 
-    Spacer(modifier = Modifier.height(16.dp))
+    Spacer(modifier = Modifier.height(20.dp))
 
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -160,13 +184,12 @@ private fun ServerConnectionSection(wsRepo: WebSocketRepository, context: Contex
                     contentColor = Color(0xFFF44336)
                 )
             ) {
-                Text("Disconnect")
+                Text("Disconnect", fontSize = 22.sp)
             }
         }
         Spacer(modifier = Modifier.width(12.dp))
         Button(
             onClick = {
-                // Save to prefs
                 prefs.edit()
                     .putString(KEY_SERVER_IP, ipAddress)
                     .putString(KEY_SERVER_PORT, port)
@@ -174,9 +197,16 @@ private fun ServerConnectionSection(wsRepo: WebSocketRepository, context: Contex
                 val url = "ws://$ipAddress:$port"
                 wsRepo.disconnect()
                 wsRepo.connect(url)
-            }
+            },
+            colors = ButtonDefaults.buttonColors(
+                containerColor = WieTeal
+            )
         ) {
-            Text(if (isConnected) "Reconnect" else "Connect")
+            Text(
+                if (isConnected) "Reconnect" else "Connect",
+                fontSize = 22.sp,
+                fontWeight = FontWeight.Bold
+            )
         }
     }
 }
@@ -186,42 +216,39 @@ private fun VolumeSection(context: Context) {
     val ttsPlayer = context.jackieApp.ttsAudioPlayer
     val prefs = remember { context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE) }
 
-    // Load saved volume (0.0 - 1.0), default 50%
     var volume by remember {
         mutableFloatStateOf(prefs.getFloat(KEY_VOLUME, 0.5f))
     }
 
     Text(
         text = "Speaker Volume: ${(volume * 100).toInt()}%",
-        color = MaterialTheme.colorScheme.onBackground,
-        fontSize = 20.sp,
-        fontWeight = FontWeight.Medium
+        color = WieNavy,
+        fontSize = 28.sp,
+        fontWeight = FontWeight.Bold
     )
 
-    Spacer(modifier = Modifier.height(8.dp))
+    Spacer(modifier = Modifier.height(12.dp))
 
     Slider(
         value = volume,
         onValueChange = { newValue ->
             volume = newValue
-            // Apply immediately to AudioTrack
             ttsPlayer.setVolume(newValue)
         },
         onValueChangeFinished = {
-            // Persist to SharedPreferences
             prefs.edit().putFloat(KEY_VOLUME, volume).apply()
         },
         valueRange = 0f..1f,
         modifier = Modifier.fillMaxWidth(),
         colors = SliderDefaults.colors(
-            thumbColor = MaterialTheme.colorScheme.primary,
-            activeTrackColor = MaterialTheme.colorScheme.primary
+            thumbColor = WieTeal,
+            activeTrackColor = WieTeal
         )
     )
 
     Text(
         text = "MUTE \u2190 \u2192 MAX",
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
-        fontSize = 14.sp
+        color = WieNavy.copy(alpha = 0.5f),
+        fontSize = 20.sp
     )
 }

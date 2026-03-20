@@ -3,14 +3,14 @@
   "tagline": "Engineering Beyond Imagination",
   "logoAsset": "wie_logo.png",
   "colors": {
-    "primary": "#7B2D8B",
+    "primary": "#1B0A6E",
     "secondary": "#00A99D",
-    "tertiary": "#F7941D",
-    "background": "#FAFAFA",
+    "tertiary": "#7B2D8B",
+    "background": "#F0EBF5",
     "onPrimary": "#FFFFFF",
-    "onBackground": "#1C1B1F",
+    "onBackground": "#1B0A6E",
     "surface": "#FFFFFF",
-    "onSurface": "#1C1B1F"
+    "onSurface": "#1B0A6E"
   },
   "fonts": {
     "bodyFont": "Roboto",
@@ -24,16 +24,10 @@
       "description": "Chat with your AI guide about the event, directions, or anything else"
     },
     {
-      "label": "Guided Tour",
-      "action": "navigate:map",
-      "icon": "map",
-      "description": "Let the robot guide you to any room or exhibit"
-    },
-    {
-      "label": "Keynote Info",
-      "action": "inline:keynote",
-      "icon": "star",
-      "description": "Details about today's keynote speakers"
+      "label": "Photo Booth",
+      "action": "navigate:photobooth",
+      "icon": "camera",
+      "description": "Take a selfie with Jackie the robot!"
     },
     {
       "label": "Schedule",
@@ -46,12 +40,6 @@
       "action": "url:https://2026.siliconvalleywie.org/",
       "icon": "web",
       "description": "Visit the SV WiE 2026 conference website"
-    },
-    {
-      "label": "Settings",
-      "action": "navigate:settings",
-      "icon": "settings",
-      "description": "Volume control and system settings"
     }
   ],
   "sponsors": [
@@ -90,6 +78,10 @@
     {
       "name": "Skydio",
       "logoAsset": "sponsor_skydio.png"
+    },
+    {
+      "name": "Quizlet",
+      "logoAsset": "sponsor_quizlet.png"
     }
   ],
   "schedule": [

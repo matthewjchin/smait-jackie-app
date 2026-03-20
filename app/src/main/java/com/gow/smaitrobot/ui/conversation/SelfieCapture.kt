@@ -349,8 +349,30 @@ private fun saveBitmapToGallery(context: android.content.Context, bitmap: Bitmap
             val stream: OutputStream? = context.contentResolver.openOutputStream(it)
             stream?.use { os -> bitmap.compress(Bitmap.CompressFormat.JPEG, 95, os) }
         }
-        Log.i(TAG, "Selfie saved: $filename")
+        Log.i(TAG, "Selfie saved locally: $filename")
     } catch (e: Exception) {
-        Log.e(TAG, "Failed to save selfie", e)
+        Log.e(TAG, "Failed to save selfie locally", e)
+    }
+}
+
+/**
+ * Compresses a Bitmap to JPEG bytes and sends to server as a selfie binary frame.
+ * Frame format: 0x07 (type byte) + JPEG payload.
+ * Server saves it in the session log folder alongside audio and session JSON.
+ */
+fun sendSelfieToServer(bitmap: Bitmap, wsRepo: com.gow.smaitrobot.data.websocket.WebSocketRepository) {
+    try {
+        val out = ByteArrayOutputStream()
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 90, out)
+        val jpegBytes = out.toByteArray()
+
+        // Frame: 0x07 (selfie type) + JPEG bytes
+        val frame = ByteArray(1 + jpegBytes.size)
+        frame[0] = 0x07
+        System.arraycopy(jpegBytes, 0, frame, 1, jpegBytes.size)
+        wsRepo.send(frame)
+        Log.i(TAG, "Selfie sent to server (${jpegBytes.size} bytes)")
+    } catch (e: Exception) {
+        Log.e(TAG, "Failed to send selfie to server", e)
     }
 }

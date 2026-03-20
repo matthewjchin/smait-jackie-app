@@ -16,6 +16,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.toRoute
 import com.gow.smaitrobot.CaeAudioManager
 import com.gow.smaitrobot.ChassisProxy
 import com.gow.smaitrobot.StandardAudioManager
@@ -34,6 +35,8 @@ import com.gow.smaitrobot.ui.home.HomeViewModel
 import com.gow.smaitrobot.ui.navigation_map.NavigationMapScreen
 import com.gow.smaitrobot.ui.navigation_map.NavigationMapViewModel
 import com.gow.smaitrobot.ui.settings.SettingsScreen
+import com.gow.smaitrobot.ui.photobooth.PhotoBoothScreen
+import com.gow.smaitrobot.ui.web.WebViewScreen
 
 private const val TAG = "AppNavigation"
 
@@ -176,8 +179,21 @@ fun AppScaffold(
         composable<Screen.EventInfo> {
             EventInfoScreen(viewModel = eventInfoViewModel, navController = navController)
         }
+        composable<Screen.PhotoBooth> {
+            PhotoBoothScreen(navController = navController, wsRepo = wsRepo)
+        }
         composable<Screen.Settings> {
             SettingsScreen(navController = navController)
+        }
+        composable<Screen.Web> { backStackEntry ->
+            val screen = backStackEntry.arguments?.let {
+                navController.currentBackStackEntry
+                    ?.toRoute<Screen.Web>()
+            }
+            WebViewScreen(
+                url = screen?.url ?: "https://2026.siliconvalleywie.org/",
+                navController = navController
+            )
         }
     }
 }

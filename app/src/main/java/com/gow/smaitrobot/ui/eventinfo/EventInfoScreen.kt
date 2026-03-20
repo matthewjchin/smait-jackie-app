@@ -14,12 +14,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
+
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AssistChip
-import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.AssistChipDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -27,6 +29,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -38,9 +41,15 @@ import com.gow.smaitrobot.data.model.ScheduleItem
 import com.gow.smaitrobot.data.model.SpeakerInfo
 import com.gow.smaitrobot.ui.common.SponsorBar
 import com.gow.smaitrobot.ui.common.SubScreenTopBar
+import com.gow.smaitrobot.ui.common.WieBackground
+
+private val WieNavy = Color(0xFF1B0A6E)
+private val WieTeal = Color(0xFF00A99D)
+private val WiePurple = Color(0xFF7B2D8B)
 
 /**
  * Event Info screen — schedule, speakers, and venue info.
+ * Uses WiE gradient background and large accessible fonts.
  */
 @Composable
 fun EventInfoScreen(
@@ -54,115 +63,116 @@ fun EventInfoScreen(
     val tagline by viewModel.tagline.collectAsStateWithLifecycle()
     val sponsors by viewModel.sponsors.collectAsStateWithLifecycle()
 
-    Column(
-        modifier = modifier.fillMaxSize()
-    ) {
-        SubScreenTopBar(
-            title = "Event Info",
-            onBack = { navController.popBackStack() }
-        )
-
-        LazyColumn(
-            modifier = Modifier.weight(1f),
-            contentPadding = PaddingValues(bottom = 16.dp)
+    WieBackground(modifier = modifier) {
+        Column(
+            modifier = Modifier.fillMaxSize()
         ) {
-            // Event header
-            item {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 16.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text(
-                        text = eventName,
-                        color = MaterialTheme.colorScheme.primary,
-                        fontSize = 28.sp,
-                        fontWeight = FontWeight.Bold,
-                        textAlign = TextAlign.Center
-                    )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = tagline,
-                        color = MaterialTheme.colorScheme.onBackground,
-                        fontSize = 18.sp,
-                        textAlign = TextAlign.Center
-                    )
-                }
-            }
+            SubScreenTopBar(
+                title = "Schedule & Speakers",
+                onBack = { navController.popBackStack() }
+            )
 
-            // Schedule section
-            item {
-                SectionHeading(
-                    text = "Schedule",
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
-                )
-            }
-
-            if (schedule.isEmpty()) {
+            LazyColumn(
+                modifier = Modifier.weight(1f),
+                contentPadding = PaddingValues(bottom = 16.dp)
+            ) {
+                // Event header
                 item {
-                    EmptyState(
-                        message = "Schedule coming soon",
-                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
-                    )
-                }
-            } else {
-                items(schedule, key = { "${it.time}_${it.title}" }) { item ->
-                    ScheduleCard(
-                        item = item,
+                    Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 16.dp, vertical = 4.dp)
-                    )
-                }
-            }
-
-            // Speakers section
-            item {
-                SectionHeading(
-                    text = "Speakers",
-                    modifier = Modifier.padding(
-                        start = 16.dp, end = 16.dp, top = 16.dp, bottom = 8.dp
-                    )
-                )
-            }
-
-            if (speakers.isEmpty()) {
-                item {
-                    EmptyState(
-                        message = "Speakers coming soon",
-                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
-                    )
-                }
-            } else {
-                item {
-                    LazyRow(
-                        contentPadding = PaddingValues(horizontal = 16.dp),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                            .padding(horizontal = 24.dp, vertical = 16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        items(speakers, key = { it.name }) { speaker ->
-                            SpeakerCard(speaker = speaker)
-                        }
+                        Text(
+                            text = eventName,
+                            color = WieNavy,
+                            fontSize = 52.sp,
+                            fontWeight = FontWeight.ExtraBold,
+                            textAlign = TextAlign.Center
+                        )
+                        Spacer(modifier = Modifier.height(6.dp))
+                        Text(
+                            text = tagline,
+                            color = WieTeal,
+                            fontSize = 36.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            textAlign = TextAlign.Center
+                        )
                     }
                 }
+
+                // Schedule section
+                item {
+                    SectionHeading(
+                        text = "Schedule",
+                        modifier = Modifier.padding(horizontal = 24.dp, vertical = 12.dp)
+                    )
+                }
+
+                if (schedule.isEmpty()) {
+                    item {
+                        EmptyState(
+                            message = "Schedule coming soon",
+                            modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp)
+                        )
+                    }
+                } else {
+                    items(schedule, key = { "${it.time}_${it.title}" }) { item ->
+                        ScheduleCard(
+                            item = item,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 20.dp, vertical = 6.dp)
+                        )
+                    }
+                }
+
+                // Speakers section
+                item {
+                    SectionHeading(
+                        text = "Keynote Speakers",
+                        modifier = Modifier.padding(
+                            start = 24.dp, end = 24.dp, top = 20.dp, bottom = 12.dp
+                        )
+                    )
+                }
+
+                if (speakers.isEmpty()) {
+                    item {
+                        EmptyState(
+                            message = "Speakers coming soon",
+                            modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp)
+                        )
+                    }
+                } else {
+                    items(speakers, key = { it.name }) { speaker ->
+                        SpeakerCard(
+                            speaker = speaker,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 20.dp, vertical = 6.dp)
+                        )
+                    }
+                }
+
+                // Venue section
+                item {
+                    SectionHeading(
+                        text = "Venue",
+                        modifier = Modifier.padding(horizontal = 24.dp, vertical = 12.dp)
+                    )
+                    VenueInfoCard(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 20.dp)
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                }
             }
 
-            // Venue section
-            item {
-                SectionHeading(
-                    text = "Venue",
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
-                )
-                VenueInfoPlaceholder(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp)
-                )
-                Spacer(modifier = Modifier.height(16.dp))
-            }
+            SponsorBar(sponsors = sponsors)
         }
-
-        SponsorBar(sponsors = sponsors)
     }
 }
 
@@ -174,9 +184,9 @@ private fun SectionHeading(
     Text(
         text = text,
         modifier = modifier,
-        color = MaterialTheme.colorScheme.onBackground,
-        fontSize = 24.sp,
-        fontWeight = FontWeight.Bold
+        color = WieNavy,
+        fontSize = 48.sp,
+        fontWeight = FontWeight.ExtraBold
     )
 }
 
@@ -188,8 +198,8 @@ private fun EmptyState(
     Text(
         text = message,
         modifier = modifier,
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
-        fontSize = 18.sp,
+        color = WieNavy.copy(alpha = 0.5f),
+        fontSize = 36.sp,
         fontWeight = FontWeight.Normal
     )
 }
@@ -199,57 +209,75 @@ private fun ScheduleCard(
     item: ScheduleItem,
     modifier: Modifier = Modifier
 ) {
-    ElevatedCard(modifier = modifier) {
+    Card(
+        modifier = modifier,
+        colors = CardDefaults.cardColors(
+            containerColor = Color.White.copy(alpha = 0.85f)
+        ),
+        shape = RoundedCornerShape(12.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 12.dp),
+                .padding(horizontal = 24.dp, vertical = 20.dp),
             verticalAlignment = Alignment.Top
         ) {
             Text(
                 text = item.time,
-                color = MaterialTheme.colorScheme.primary,
-                fontSize = 18.sp,
+                color = WieTeal,
+                fontSize = 36.sp,
                 fontWeight = FontWeight.Bold,
-                modifier = Modifier.width(80.dp)
+                modifier = Modifier.width(180.dp)
             )
 
-            Spacer(modifier = Modifier.width(12.dp))
+            Spacer(modifier = Modifier.width(20.dp))
 
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = item.title,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.SemiBold
+                    color = WieNavy,
+                    fontSize = 38.sp,
+                    fontWeight = FontWeight.Bold,
+                    lineHeight = 44.sp
                 )
 
                 if (item.speaker.isNotBlank()) {
                     Text(
                         text = item.speaker,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        fontSize = 16.sp,
-                        modifier = Modifier.padding(top = 2.dp)
+                        color = WiePurple,
+                        fontSize = 32.sp,
+                        modifier = Modifier.padding(top = 6.dp)
                     )
                 }
 
                 Row(
-                    modifier = Modifier.padding(top = 4.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.padding(top = 8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     if (item.location.isNotBlank()) {
                         Text(
                             text = item.location,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            fontSize = 14.sp
+                            color = WieNavy.copy(alpha = 0.6f),
+                            fontSize = 28.sp
                         )
                     }
                     if (item.track.isNotBlank()) {
                         AssistChip(
                             onClick = {},
-                            label = { Text(text = item.track, fontSize = 12.sp) },
-                            modifier = Modifier.height(28.dp)
+                            label = {
+                                Text(
+                                    text = item.track,
+                                    fontSize = 26.sp,
+                                    fontWeight = FontWeight.Medium
+                                )
+                            },
+                            modifier = Modifier.height(44.dp),
+                            colors = AssistChipDefaults.assistChipColors(
+                                containerColor = WieTeal.copy(alpha = 0.15f),
+                                labelColor = WieTeal
+                            )
                         )
                     }
                 }
@@ -263,88 +291,104 @@ private fun SpeakerCard(
     speaker: SpeakerInfo,
     modifier: Modifier = Modifier
 ) {
-    ElevatedCard(modifier = modifier.width(160.dp)) {
-        Column(
+    Card(
+        modifier = modifier,
+        colors = CardDefaults.cardColors(
+            containerColor = Color.White.copy(alpha = 0.9f)
+        ),
+        shape = RoundedCornerShape(16.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(12.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+                .padding(24.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
             Box(
                 modifier = Modifier
-                    .size(64.dp)
+                    .size(90.dp)
                     .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.primaryContainer),
+                    .background(WiePurple.copy(alpha = 0.15f)),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
                     text = speaker.name.take(1).uppercase(),
-                    color = MaterialTheme.colorScheme.onPrimaryContainer,
-                    fontSize = 24.sp,
+                    color = WiePurple,
+                    fontSize = 42.sp,
                     fontWeight = FontWeight.Bold
                 )
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.width(24.dp))
 
-            Text(
-                text = speaker.name,
-                color = MaterialTheme.colorScheme.onSurface,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold,
-                textAlign = TextAlign.Center,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis
-            )
-
-            if (speaker.title.isNotBlank()) {
+            Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = speaker.title,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    fontSize = 12.sp,
-                    textAlign = TextAlign.Center,
+                    text = speaker.name,
+                    color = WieNavy,
+                    fontSize = 36.sp,
+                    fontWeight = FontWeight.Bold,
                     maxLines = 2,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.padding(top = 2.dp)
+                    overflow = TextOverflow.Ellipsis
                 )
-            }
 
-            if (speaker.bio.isNotBlank()) {
-                Text(
-                    text = speaker.bio,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    fontSize = 11.sp,
-                    textAlign = TextAlign.Center,
-                    maxLines = 3,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.padding(top = 4.dp)
-                )
+                if (speaker.title.isNotBlank()) {
+                    Text(
+                        text = speaker.title,
+                        color = WieTeal,
+                        fontSize = 28.sp,
+                        maxLines = 3,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.padding(top = 6.dp)
+                    )
+                }
+
+                if (speaker.bio.isNotBlank()) {
+                    Text(
+                        text = speaker.bio,
+                        color = WieNavy.copy(alpha = 0.6f),
+                        fontSize = 24.sp,
+                        maxLines = 3,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.padding(top = 8.dp)
+                    )
+                }
             }
         }
     }
 }
 
 @Composable
-private fun VenueInfoPlaceholder(modifier: Modifier = Modifier) {
-    Box(
-        modifier = modifier
-            .height(120.dp)
-            .clip(RoundedCornerShape(8.dp))
-            .background(MaterialTheme.colorScheme.surfaceVariant),
-        contentAlignment = Alignment.Center
+private fun VenueInfoCard(modifier: Modifier = Modifier) {
+    Card(
+        modifier = modifier,
+        colors = CardDefaults.cardColors(
+            containerColor = Color.White.copy(alpha = 0.85f)
+        ),
+        shape = RoundedCornerShape(12.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(
-                text = "Venue Map",
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Medium
-            )
-            Text(
-                text = "Map image will appear here",
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                fontSize = 14.sp
-            )
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(180.dp)
+                .padding(28.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(
+                    text = "San Jose State University",
+                    color = WieNavy,
+                    fontSize = 40.sp,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    text = "Student Union",
+                    color = WieTeal,
+                    fontSize = 34.sp,
+                    fontWeight = FontWeight.Medium
+                )
+            }
         }
     }
 }

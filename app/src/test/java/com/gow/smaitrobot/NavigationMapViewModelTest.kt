@@ -62,7 +62,7 @@ class NavigationMapViewModelTest {
     // ── Test 1: 0x06 binary frame updates mapBitmap to non-null ─────────────
 
     @Test
-    fun `Test 1 - binary frame with bytes[0] 0x06 updates mapBitmap to non-null Bitmap`() = runTest {
+    fun `Test 1 - binary frame with first byte 0x06 updates mapBitmap to non-null Bitmap`() = runTest {
         val pngData = byteArrayOf(0x01, 0x02, 0x03) // arbitrary PNG data (decoder is faked)
         val frame = byteArrayOf(0x06.toByte()) + pngData
 
@@ -74,7 +74,7 @@ class NavigationMapViewModelTest {
     // ── Test 2: Non-0x06 binary frame does NOT update mapBitmap ─────────────
 
     @Test
-    fun `Test 2 - binary frame with bytes[0] not 0x06 does NOT update mapBitmap`() = runTest {
+    fun `Test 2 - binary frame with first byte not 0x06 does NOT update mapBitmap`() = runTest {
         // 0x05 = TTS audio frame, should be ignored
         val audioFrame = byteArrayOf(0x05.toByte(), 0x00, 0x01, 0x02, 0x03)
         fakeEventsFlow.emit(WebSocketEvent.BinaryFrame(audioFrame))

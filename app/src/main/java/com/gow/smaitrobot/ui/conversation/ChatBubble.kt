@@ -10,12 +10,12 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -23,6 +23,10 @@ import com.gow.smaitrobot.data.model.ChatMessage
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+
+private val WieNavy = Color(0xFF1B0A6E)
+private val WieTeal = Color(0xFF00A99D)
+private val WiePurple = Color(0xFF7B2D8B)
 
 /**
  * Pure logic object for ChatBubble alignment decisions.
@@ -33,67 +37,61 @@ object ChatBubbleAlignment {
 
 /**
  * Chat bubble with clear visual distinction between user and robot.
+ * Uses WiE color scheme and large accessible fonts.
  *
- * - User messages: right-aligned, primary color, "You" label
- * - Robot messages: left-aligned, surface variant, "Jackie" label
+ * - User messages: right-aligned, teal tint, "You" label
+ * - Robot messages: left-aligned, white/frost, "Jackie" label
  */
 @Composable
 fun ChatBubble(message: ChatMessage) {
     val isUser = message.isUser
     val arrangement = if (isUser) Arrangement.End else Arrangement.Start
     val bubbleColor = if (isUser) {
-        MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)
+        WieTeal.copy(alpha = 0.15f)
     } else {
-        MaterialTheme.colorScheme.surfaceVariant
+        Color.White.copy(alpha = 0.85f)
     }
-    val textColor = if (isUser) {
-        MaterialTheme.colorScheme.onSurface
-    } else {
-        MaterialTheme.colorScheme.onSurfaceVariant
-    }
-    val labelColor = if (isUser) {
-        MaterialTheme.colorScheme.primary
-    } else {
-        MaterialTheme.colorScheme.secondary
-    }
-    // Different corner rounding to make it look like a chat app
+    val textColor = WieNavy
+    val labelColor = if (isUser) WieTeal else WiePurple
+
     val shape = if (isUser) {
-        RoundedCornerShape(16.dp, 16.dp, 4.dp, 16.dp)
+        RoundedCornerShape(20.dp, 20.dp, 4.dp, 20.dp)
     } else {
-        RoundedCornerShape(16.dp, 16.dp, 16.dp, 4.dp)
+        RoundedCornerShape(20.dp, 20.dp, 20.dp, 4.dp)
     }
 
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 12.dp, vertical = 3.dp),
+            .padding(horizontal = 16.dp, vertical = 6.dp),
         horizontalArrangement = arrangement
     ) {
         Column(
             modifier = Modifier
-                .widthIn(max = 280.dp)
+                .widthIn(max = 600.dp)
                 .clip(shape)
                 .background(bubbleColor)
-                .padding(horizontal = 12.dp, vertical = 8.dp),
+                .padding(horizontal = 20.dp, vertical = 14.dp),
             horizontalAlignment = if (isUser) Alignment.End else Alignment.Start
         ) {
             Text(
                 text = if (isUser) "You" else "Jackie",
                 color = labelColor,
-                fontSize = 13.sp,
+                fontSize = 28.sp,
                 fontWeight = FontWeight.Bold
             )
-            Spacer(modifier = Modifier.height(2.dp))
+            Spacer(modifier = Modifier.height(6.dp))
             Text(
                 text = message.text,
                 color = textColor,
-                fontSize = 16.sp
+                fontSize = 36.sp,
+                lineHeight = 44.sp
             )
             Text(
                 text = formatTimestamp(message.timestamp),
-                color = textColor.copy(alpha = 0.5f),
-                fontSize = 12.sp,
-                modifier = Modifier.padding(top = 2.dp)
+                color = textColor.copy(alpha = 0.4f),
+                fontSize = 22.sp,
+                modifier = Modifier.padding(top = 4.dp)
             )
         }
     }

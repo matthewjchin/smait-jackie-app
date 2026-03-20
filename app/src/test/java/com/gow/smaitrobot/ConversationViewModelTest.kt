@@ -1,8 +1,8 @@
 package com.gow.smaitrobot
 
 import app.cash.turbine.test
-import com.gow.smaitrobot.data.model.FeedbackData
 import com.gow.smaitrobot.data.model.RobotState
+import com.gow.smaitrobot.data.model.SurveyData
 import com.gow.smaitrobot.data.model.UiEvent
 import com.gow.smaitrobot.data.websocket.WebSocketEvent
 import com.gow.smaitrobot.data.websocket.WebSocketRepository
@@ -18,13 +18,14 @@ import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
+import org.mockito.Mockito.atLeast
 import org.mockito.kotlin.argumentCaptor
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
-import kotlin.test.assertEquals
-import kotlin.test.assertFalse
-import kotlin.test.assertTrue
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class ConversationViewModelTest {
@@ -125,34 +126,46 @@ class ConversationViewModelTest {
         verify(ttsPlayer).handleBinaryFrame(ttsBytes)
     }
 
-    // Test 7: Session end (state="idle" after "conversing") triggers showFeedback=true
+    // Test 7: Session end (state="idle" after "conversing") triggers showSurvey=true
     @Test
-    fun `session end triggers showFeedback`() = testScope.runTest {
+    fun `session end triggers showSurvey`() = testScope.runTest {
         val vm = createViewModel()
 
-        // First: send a non-idle state to mark wasConversing=true
         eventsFlow.emit(WebSocketEvent.JsonMessage("state", """{"type":"state","value":"listening"}"""))
         testScheduler.advanceTimeBy(100)
 
-        // Then: send idle state to trigger session end detection
         eventsFlow.emit(WebSocketEvent.JsonMessage("state", """{"type":"state","value":"idle"}"""))
         testScheduler.advanceTimeBy(100)
 
-        assertTrue(vm.showFeedback.value)
+        assertTrue(vm.showSurvey.value)
     }
 
-    // Test 8: sendFeedback() sends JSON message via WebSocketRepository
+    // Test 8: submitSurvey() sends survey JSON via WebSocketRepository
     @Test
-    fun `sendFeedback sends JSON via wsRepo`() = testScope.runTest {
+    fun `submitSurvey sends JSON via wsRepo`() = testScope.runTest {
         val vm = createViewModel()
-        val feedback = FeedbackData(rating = 4, sessionId = "test-session-1")
-        vm.sendFeedback(feedback)
+        val survey = SurveyData(
+            starRating = 4,
+            understood = 5,
+            helpful = 4,
+            natural = 3,
+            attentive = 4,
+            comment = "Great robot!",
+            completedInTime = true,
+            timeToCompleteMs = 8500,
+            sessionId = "test-session-1"
+        )
+        vm.submitSurvey(survey)
         testScheduler.advanceTimeBy(100)
 
+        // Captures all send(String) calls: session_command("start"), survey, session_command("end")
         val captor = argumentCaptor<String>()
-        verify(wsRepo).send(captor.capture())
-        assertTrue(captor.firstValue.contains("\"type\":\"feedback\""))
-        assertTrue(captor.firstValue.contains("\"rating\":4"))
+        org.mockito.Mockito.verify(wsRepo, atLeast(2)).send(captor.capture())
+
+        val surveyJson = captor.allValues.first { it.contains("\"type\":\"survey\"") }
+        assertTrue(surveyJson.contains("\"star_rating\":4"))
+        assertTrue(surveyJson.contains("\"understood\":5"))
+        assertTrue(surveyJson.contains("\"completed\":true"))
     }
 
     // Test 9: Transcript list maintains message order (oldest first)
@@ -175,11 +188,9 @@ class ConversationViewModelTest {
     fun `CaeAudioManager writer callback calls wsRepo send bytes`() = testScope.runTest {
         val vm = createViewModel()
 
-        // Verify setWriterCallback was called on caeAudio
         val captor = argumentCaptor<(ByteArray) -> Unit>()
         verify(caeAudio).setWriterCallback(captor.capture())
 
-        // Invoke the captured callback with test bytes
         val testBytes = byteArrayOf(0x01, 0x10, 0x20)
         captor.firstValue.invoke(testBytes)
 
@@ -188,13 +199,24 @@ class ConversationViewModelTest {
         assertTrue(bytesCaptor.firstValue.contentEquals(testBytes))
     }
 
-    // Test 11: After feedback dismissed, UiEvent.NavigateTo(Home) is emitted
+    // Test 11: After survey dismissed, UiEvent.NavigateTo(Home) is emitted
     @Test
-    fun `dismissFeedback emits NavigateTo Home`() = testScope.runTest {
+    fun `dismissSurvey emits NavigateTo Home`() = testScope.runTest {
         val vm = createViewModel()
+        val dismissedSurvey = SurveyData(
+            starRating = 0,
+            understood = 0,
+            helpful = 0,
+            natural = 0,
+            attentive = 0,
+            comment = "",
+            completedInTime = false,
+            timeToCompleteMs = 20000,
+            sessionId = "test-session"
+        )
 
         vm.uiEvents.test {
-            vm.dismissFeedback()
+            vm.dismissSurvey(dismissedSurvey)
             testScheduler.advanceTimeBy(100)
             val event = awaitItem()
             assertTrue(event is UiEvent.NavigateTo)
@@ -209,7 +231,6 @@ class ConversationViewModelTest {
         val vm = createViewModel()
 
         vm.uiEvents.test {
-            // Advance time past the 30s silence window
             advanceTimeBy(31_000L)
             val event = awaitItem()
             assertTrue(event is UiEvent.NavigateTo)
@@ -224,22 +245,73 @@ class ConversationViewModelTest {
         val vm = createViewModel()
 
         vm.uiEvents.test {
-            // Advance 25s — not yet timed out
             advanceTimeBy(25_000L)
 
-            // Emit a message to reset the timer
             eventsFlow.emit(WebSocketEvent.JsonMessage("transcript", """{"type":"transcript","text":"alive"}"""))
             testScheduler.advanceTimeBy(100)
 
-            // Advance another 25s from reset — still within 30s window, so no timeout yet
             advanceTimeBy(25_000L)
-
-            // Now advance past the 30s mark from the last reset (5s more)
             advanceTimeBy(6_000L)
 
             val event = awaitItem()
             assertTrue(event is UiEvent.NavigateTo)
             cancelAndIgnoreRemainingEvents()
         }
+    }
+
+    // Test 14: submitSurvey sends session_command("end") after survey data
+    @Test
+    fun `submitSurvey sends session end after survey data`() = testScope.runTest {
+        val vm = createViewModel()
+        val survey = SurveyData(
+            starRating = 5,
+            understood = 4,
+            helpful = 5,
+            natural = 4,
+            attentive = 5,
+            comment = "",
+            completedInTime = true,
+            timeToCompleteMs = 5000,
+            sessionId = "test-session-2"
+        )
+        vm.submitSurvey(survey)
+        testScheduler.advanceTimeBy(100)
+
+        val captor = argumentCaptor<String>()
+        org.mockito.Mockito.verify(wsRepo, atLeast(3)).send(captor.capture())
+
+        val allValues = captor.allValues
+        assertTrue(allValues.any { it.contains("\"type\":\"survey\"") })
+        val surveyIdx = allValues.indexOfFirst { it.contains("\"type\":\"survey\"") }
+        val endIdx = allValues.indexOfFirst { json ->
+            json.contains("\"type\":\"session_command\"") && json.contains("\"action\":\"end\"")
+        }
+        assertTrue("session_command end should be sent after survey data", endIdx > surveyIdx)
+    }
+
+    // Test 15: dismissSurvey also sends survey data (with completedInTime=false)
+    @Test
+    fun `dismissSurvey sends partial survey data`() = testScope.runTest {
+        val vm = createViewModel()
+        val dismissedSurvey = SurveyData(
+            starRating = 3,
+            understood = 0,
+            helpful = 0,
+            natural = 0,
+            attentive = 0,
+            comment = "",
+            completedInTime = false,
+            timeToCompleteMs = 20000,
+            sessionId = "test-session-3"
+        )
+        vm.dismissSurvey(dismissedSurvey)
+        testScheduler.advanceTimeBy(100)
+
+        val captor = argumentCaptor<String>()
+        org.mockito.Mockito.verify(wsRepo, atLeast(2)).send(captor.capture())
+
+        val surveyJson = captor.allValues.first { it.contains("\"type\":\"survey\"") }
+        assertTrue(surveyJson.contains("\"completed\":false"))
+        assertTrue(surveyJson.contains("\"star_rating\":3"))
     }
 }
