@@ -169,7 +169,7 @@ fun SelfieCapture(
                         delay(1_000L)
                     }
                     countdownValue = 0
-                    // Capture frame
+                    // Set listener then fire a one-shot capture to the imageReader
                     imageReader.setOnImageAvailableListener({ reader ->
                         val image = reader.acquireNextImage() ?: return@setOnImageAvailableListener
                         val bmp = yuv420ToBitmap(image)
@@ -179,6 +179,16 @@ fun SelfieCapture(
                             showFlash = true
                         }
                     }, cameraHandler)
+                    // Trigger a capture request that targets the imageReader
+                    val cam = cameraDevice
+                    val session = captureSession
+                    if (cam != null && session != null) {
+                        val captureReq = cam.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE).apply {
+                            addTarget(imageReader.surface)
+                            set(CaptureRequest.CONTROL_MODE, CaptureRequest.CONTROL_MODE_AUTO)
+                        }.build()
+                        session.capture(captureReq, null, cameraHandler)
+                    }
                 }
             }
 

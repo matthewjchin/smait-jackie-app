@@ -9,7 +9,7 @@ import com.gow.smaitrobot.data.model.SurveyData
 object SurveyBuilder {
 
     /** Survey auto-dismiss timeout in milliseconds. */
-    const val SURVEY_TIMEOUT_MS = 20_000L
+    const val SURVEY_TIMEOUT_MS = 60_000L
 
     /**
      * Returns true if [rating] is within the valid 1-5 range.

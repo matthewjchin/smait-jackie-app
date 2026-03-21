@@ -30,6 +30,7 @@ import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.gow.smaitrobot.data.model.SponsorConfig
 
 /**
@@ -155,7 +156,9 @@ private fun SponsorLogo(
 ) {
     val context = LocalContext.current
     val resName = sponsor.logoAsset.substringBeforeLast(".")
-    val resId = context.resources.getIdentifier(resName, "drawable", context.packageName)
+    val resId = if (resName.isNotEmpty()) {
+        context.resources.getIdentifier(resName, "drawable", context.packageName)
+    } else 0
 
     if (resId != 0) {
         Image(
@@ -165,6 +168,18 @@ private fun SponsorLogo(
                 .height(72.dp)
                 .widthIn(max = 240.dp),
             contentScale = ContentScale.Fit
+        )
+    } else if (sponsor.name.isNotEmpty()) {
+        androidx.compose.material3.Text(
+            text = sponsor.name,
+            modifier = modifier
+                .widthIn(max = 300.dp)
+                .padding(horizontal = 8.dp),
+            fontSize = 14.sp,
+            fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+            maxLines = 2
         )
     }
 }

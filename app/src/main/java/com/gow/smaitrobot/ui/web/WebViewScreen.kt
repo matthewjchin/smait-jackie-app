@@ -5,6 +5,7 @@ import android.webkit.WebViewClient
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.navigation.NavHostController
@@ -19,10 +20,19 @@ fun WebViewScreen(
     url: String,
     navController: NavHostController
 ) {
+    var webViewRef = remember { mutableListOf<WebView?>(null) }
+
     Column(modifier = Modifier.fillMaxSize()) {
         SubScreenTopBar(
             title = "Event Website",
-            onBack = { navController.popBackStack() }
+            onBack = {
+                val wv = webViewRef[0]
+                if (wv != null && wv.canGoBack()) {
+                    wv.goBack()
+                } else {
+                    navController.popBackStack()
+                }
+            }
         )
 
         AndroidView(
@@ -32,6 +42,7 @@ fun WebViewScreen(
                     settings.javaScriptEnabled = true
                     settings.domStorageEnabled = true
                     loadUrl(url)
+                    webViewRef[0] = this
                 }
             },
             modifier = Modifier

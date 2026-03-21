@@ -80,7 +80,7 @@ fun SurveyScreen(
     var attentive by remember { mutableIntStateOf(0) }
     var comment by remember { mutableStateOf("") }
 
-    var remainingSeconds by remember { mutableLongStateOf(20L) }
+    var remainingSeconds by remember { mutableLongStateOf(60L) }
     var hasInteracted by remember { mutableStateOf(false) }
 
     // Countdown timer: ticks every second, auto-dismisses at 0
@@ -277,6 +277,28 @@ fun SurveyScreen(
                     shape = RoundedCornerShape(16.dp)
                 ) {
                     Text("Submit", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                }
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                // Skip button
+                androidx.compose.material3.TextButton(
+                    onClick = {
+                        onDismiss(
+                            SurveyBuilder.buildDismissed(
+                                starRating = starRating,
+                                understood = understood,
+                                helpful = helpful,
+                                natural = natural,
+                                attentive = attentive,
+                                comment = comment,
+                                startTimeMs = surveyStartTime,
+                                sessionId = sessionId
+                            )
+                        )
+                    }
+                ) {
+                    Text("Skip", fontSize = 16.sp, color = SubtleGray)
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))

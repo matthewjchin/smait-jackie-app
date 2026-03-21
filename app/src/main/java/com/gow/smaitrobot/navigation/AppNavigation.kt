@@ -186,9 +186,11 @@ fun AppScaffold(
             SettingsScreen(navController = navController)
         }
         composable<Screen.Web> { backStackEntry ->
-            val screen = backStackEntry.arguments?.let {
-                navController.currentBackStackEntry
-                    ?.toRoute<Screen.Web>()
+            val screen = try {
+                backStackEntry.toRoute<Screen.Web>()
+            } catch (e: Exception) {
+                Log.w(TAG, "Failed to parse Web route: ${e.message}")
+                null
             }
             WebViewScreen(
                 url = screen?.url ?: "https://2026.siliconvalleywie.org/",

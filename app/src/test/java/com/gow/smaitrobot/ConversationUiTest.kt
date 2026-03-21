@@ -193,7 +193,7 @@ class ConversationUiTest {
     // -- Survey timeout constant test --
 
     @Test
-    fun `survey timeout is 20 seconds`() {
-        assertEquals(20_000L, SurveyBuilder.SURVEY_TIMEOUT_MS)
+    fun `survey timeout is 60 seconds`() {
+        assertEquals(60_000L, SurveyBuilder.SURVEY_TIMEOUT_MS)
     }
 }
