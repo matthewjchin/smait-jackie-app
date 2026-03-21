@@ -11,10 +11,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.CameraAlt
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -38,7 +34,7 @@ import com.gow.smaitrobot.ui.common.WieBackground
  * Layout:
  * - SubScreenTopBar with back arrow
  * - Left: RobotAvatar (40%)
- * - Right: Chat transcript + camera button (60%)
+ * - Right: Chat transcript (60%)
  *
  * When the session ends (robot state returns to IDLE after conversing),
  * a full-screen [SurveyScreen] overlay replaces the conversation view.
@@ -50,7 +46,6 @@ fun ConversationScreen(
 ) {
     val messages by viewModel.transcript.collectAsState()
     val robotState by viewModel.robotState.collectAsState()
-    val showCamera by viewModel.showCamera.collectAsState()
     val showSurvey by viewModel.showSurvey.collectAsState()
 
     val listState = rememberLazyListState()
@@ -151,36 +146,9 @@ fun ConversationScreen(
                             }
                         }
 
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 8.dp, vertical = 4.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            IconButton(
-                                onClick = { viewModel.toggleCamera() },
-                                modifier = Modifier.size(64.dp)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Filled.CameraAlt,
-                                    contentDescription = "Take selfie",
-                                    modifier = Modifier.size(40.dp),
-                                    tint = Color(0xFF1B0A6E).copy(alpha = 0.6f)
-                                )
-                            }
-                        }
                     }
                 }
 
-                if (showCamera) {
-                    SelfieCapture(
-                        onDismiss = { viewModel.toggleCamera() },
-                        onCapture = { bitmap ->
-                            viewModel.sendSelfie(bitmap)
-                            viewModel.toggleCamera()
-                        }
-                    )
-                }
             }
         }
     }
