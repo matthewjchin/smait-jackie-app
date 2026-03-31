@@ -22,6 +22,25 @@ android {
         }
     }
 
+    // Product flavors: "jackie" (ARM-only, production) vs "emulator" (x86_64, UI testing)
+    flavorDimensions += "target"
+    productFlavors {
+        create("jackie") {
+            dimension = "target"
+            ndk {
+                abiFilters.clear()
+                abiFilters += "armeabi-v7a"
+            }
+        }
+        create("emulator") {
+            dimension = "target"
+            ndk {
+                abiFilters.clear()
+                abiFilters += listOf("x86_64", "armeabi-v7a")
+            }
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = false

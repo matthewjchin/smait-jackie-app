@@ -12,7 +12,7 @@ import java.util.concurrent.TimeUnit
  *
  * Holds app-scoped singletons:
  * - [webSocketRepository] — OkHttp3 WebSocket client with SharedFlow event emission
- * - [themeRepository] — Loads WiE 2026 theme config from assets JSON
+ * - [themeRepository] — Loads event theme config from assets JSON
  *
  * Access from any [Context] via the [jackieApp] extension property:
  * ```kotlin
@@ -52,10 +52,10 @@ class JackieApplication : Application() {
             player.setVolume(prefs.getFloat("tts_volume", 0.5f))
         }
 
-        // Load default BioRob theme synchronously — required before the first frame is rendered.
+        // Load event theme synchronously — required before the first frame is rendered.
         // loadSync() uses IO on the calling thread; acceptable in Application.onCreate()
         // since it runs before any Activity starts.
-        themeRepository.loadSync("wie2026_theme.json")
+        themeRepository.loadSync("babmdc2026_theme.json")
     }
 }
 

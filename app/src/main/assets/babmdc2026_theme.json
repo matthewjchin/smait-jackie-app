@@ -1,0 +1,203 @@
+{
+  "eventName": "BABMDC 2026",
+  "tagline": "Bay Area Biomedical Device Conference",
+  "logoAsset": "babmdc_logo.png",
+  "colors": {
+    "primary": "#376137",
+    "secondary": "#6EC26E",
+    "tertiary": "#1A3D1A",
+    "background": "#F0F5F0",
+    "onPrimary": "#FFFFFF",
+    "onBackground": "#1A2E1A",
+    "surface": "#FFFFFF",
+    "onSurface": "#1A2E1A"
+  },
+  "fonts": {
+    "bodyFont": "Roboto",
+    "headingFont": "Roboto"
+  },
+  "cards": [
+    {
+      "label": "Ask Me Anything",
+      "action": "navigate:chat",
+      "icon": "chat",
+      "description": "Chat with Jackie about the conference, sessions, or biomedical devices"
+    },
+    {
+      "label": "Photo Booth",
+      "action": "navigate:photobooth",
+      "icon": "camera",
+      "description": "Take a selfie with Jackie the robot!"
+    },
+    {
+      "label": "Schedule",
+      "action": "navigate:eventinfo",
+      "icon": "schedule",
+      "description": "Full conference schedule, speakers, and poster session"
+    },
+    {
+      "label": "Event Website",
+      "action": "url:https://www.biomedicalconference.org/",
+      "icon": "web",
+      "description": "Visit the BABMDC 2026 conference website"
+    }
+  ],
+  "sponsors": [
+    {
+      "name": "Shockwave Medical (J&J MedTech)",
+      "logoAsset": "sponsor_shockwave.png",
+      "tier": "platinum"
+    },
+    {
+      "name": "SteriTek",
+      "logoAsset": "sponsor_steritek.png",
+      "tier": "platinum"
+    },
+    {
+      "name": "IEEE Electronics Packaging Society",
+      "logoAsset": "sponsor_ieee_eps.png",
+      "tier": "silver"
+    },
+    {
+      "name": "EAG Laboratories",
+      "logoAsset": "sponsor_eag.png",
+      "tier": "sponsor"
+    }
+  ],
+  "schedule": [
+    {
+      "time": "8:00 AM",
+      "title": "Registration & Breakfast",
+      "speaker": "",
+      "location": "Student Union Lobby",
+      "track": "general"
+    },
+    {
+      "time": "9:00 AM",
+      "title": "Welcome & Opening Remarks",
+      "speaker": "SJSU BMES",
+      "location": "Student Union Ballroom",
+      "track": "general"
+    },
+    {
+      "time": "9:15 AM",
+      "title": "Accounting for AI in Future BME Careers",
+      "speaker": "Dr. Kate Stephenson, Founder, Dyad Engineering",
+      "location": "Student Union Ballroom",
+      "track": "keynote"
+    },
+    {
+      "time": "10:00 AM",
+      "title": "From Concept to Clinic: Building the Evidence That Brings Devices to Patients",
+      "speaker": "Dr. Janie Mandrusov, VP Clinical Affairs, VahatiCor",
+      "location": "Student Union Ballroom",
+      "track": "clinical"
+    },
+    {
+      "time": "10:45 AM",
+      "title": "Performance and Safety Verification for Robotic Medical Devices",
+      "speaker": "Brian Crews, Staff Hardware Test Engineer, Intuitive",
+      "location": "Student Union Ballroom",
+      "track": "robotics"
+    },
+    {
+      "time": "11:30 AM",
+      "title": "Bringing Medical Devices to Market in 2026",
+      "speaker": "Barry Schnur, President & CEO, David Schnur Associates",
+      "location": "Student Union Ballroom",
+      "track": "industry"
+    },
+    {
+      "time": "12:15 PM",
+      "title": "Lunch & Poster Session",
+      "speaker": "",
+      "location": "Student Union Ballroom",
+      "track": "general"
+    },
+    {
+      "time": "1:30 PM",
+      "title": "Building Healthcare Software That Matters: Integrating Technology, Regulation, and Science",
+      "speaker": "Alma Lopez, Senior Technical Product Manager, Roche",
+      "location": "Student Union Ballroom",
+      "track": "software"
+    },
+    {
+      "time": "2:15 PM",
+      "title": "Deep Brain Stimulation for Neuropsychiatric Disorders",
+      "speaker": "Dr. Kristin Sellers, Assistant Professor, UCSF",
+      "location": "Student Union Ballroom",
+      "track": "research"
+    },
+    {
+      "time": "3:00 PM",
+      "title": "Hormonal Regulation of Heart Muscle Proliferation and Regeneration",
+      "speaker": "Dr. Alexander Payumo, Assistant Professor, San Jose State University",
+      "location": "Student Union Ballroom",
+      "track": "research"
+    },
+    {
+      "time": "3:45 PM",
+      "title": "The Usability Gap: Aligning Breast Pump Innovation with Human Reality",
+      "speaker": "Cassi Janakos, COO & Co-founder, Healthy Horizons",
+      "location": "Student Union Ballroom",
+      "track": "industry"
+    },
+    {
+      "time": "4:30 PM",
+      "title": "Closing Remarks & Networking",
+      "speaker": "",
+      "location": "Student Union Ballroom",
+      "track": "general"
+    }
+  ],
+  "speakers": [
+    {
+      "name": "Dr. Kate Stephenson",
+      "title": "Founder, Dyad Engineering",
+      "bio": "25+ years in med tech. Stanford MS & PhD in Engineering. Speaking on how AI will reshape biomedical engineering careers.",
+      "photoAsset": "speaker_stephenson.jpg"
+    },
+    {
+      "name": "Dr. Janie Mandrusov",
+      "title": "VP Clinical Affairs, VahatiCor",
+      "bio": "25+ years in cardiovascular technology with 16 patents. Expert in clinical evidence strategy for medical devices.",
+      "photoAsset": "speaker_mandrusov.jpg"
+    },
+    {
+      "name": "Brian Crews",
+      "title": "Staff Hardware Test Engineer, Intuitive",
+      "bio": "10+ years in robotic medical systems. Specializes in performance and safety verification for surgical robots.",
+      "photoAsset": "speaker_crews.jpg"
+    },
+    {
+      "name": "Barry Schnur",
+      "title": "President & CEO, David Schnur Associates",
+      "bio": "30+ years in the medical device industry. Expert on regulatory pathways and commercialization strategy.",
+      "photoAsset": "speaker_schnur.jpg"
+    },
+    {
+      "name": "Alma Lopez",
+      "title": "Senior Technical Product Manager, Roche",
+      "bio": "Builds AI-enabled healthcare solutions at Roche. Focuses on the intersection of technology, regulation, and clinical science.",
+      "photoAsset": "speaker_lopez.jpg"
+    },
+    {
+      "name": "Dr. Kristin Sellers",
+      "title": "Assistant Professor, UCSF",
+      "bio": "Researches intracranial electrical stimulation and deep brain stimulation for treating neuropsychiatric disorders.",
+      "photoAsset": "speaker_sellers.jpg"
+    },
+    {
+      "name": "Dr. Alexander Payumo",
+      "title": "Assistant Professor, San Jose State University",
+      "bio": "Cardiac regeneration researcher studying hormonal regulation of heart muscle proliferation.",
+      "photoAsset": "speaker_payumo.jpg"
+    },
+    {
+      "name": "Cassi Janakos",
+      "title": "COO & Co-founder, Healthy Horizons",
+      "bio": "Inc. Female Founders 500 honoree (2025). Advocates for human-centered medical device design.",
+      "photoAsset": "speaker_janakos.jpg"
+    }
+  ]
+}

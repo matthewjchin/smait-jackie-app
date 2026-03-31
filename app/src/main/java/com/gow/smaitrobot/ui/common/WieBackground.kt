@@ -10,11 +10,9 @@ import androidx.compose.ui.res.painterResource
 import com.gow.smaitrobot.R
 
 /**
- * Full-screen WiE gradient background (pastel yellow/pink/purple/teal with
- * geometric wireframe overlay). Extracted from the WiE Program Committee
- * Meeting slides.
+ * Full-screen event gradient background.
  *
- * Wraps [content] on top of the gradient image.
+ * Wraps [content] on top of the background image.
  */
 @Composable
 fun WieBackground(
@@ -23,7 +21,7 @@ fun WieBackground(
 ) {
     Box(modifier = modifier.fillMaxSize()) {
         Image(
-            painter = painterResource(id = R.drawable.wie_background),
+            painter = painterResource(id = R.drawable.babmdc_background),
             contentDescription = null,
             modifier = Modifier.fillMaxSize(),
             contentScale = ContentScale.Crop
