@@ -25,7 +25,7 @@ import java.util.Date
 import java.util.Locale
 
 // BABMDC 2026 green theme
-private val BabmdcGreen = Color(0xFF2E7D32)
+private val BabmdcGreen = Color(0xFF66BB6A)
 private val BabmdcDarkGreen = Color(0xFF1B5E20)
 private val UserBlue = Color(0xFF1565C0)
 
