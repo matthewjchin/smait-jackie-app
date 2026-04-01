@@ -70,6 +70,9 @@ sealed class Screen {
     data class Web(val url: String) : Screen() {
         override val label: String = "Website"
         override val iconName: String = "Language"
+    }
+
+    @Serializable
     object Follow : Screen() {
         override val label: String = "Follow Me"
         override val iconName: String = "DirectionsWalk"

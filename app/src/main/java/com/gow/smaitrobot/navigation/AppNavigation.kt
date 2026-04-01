@@ -212,6 +212,7 @@ fun AppScaffold(
                 url = screen?.url ?: "https://2026.siliconvalleywie.org/",
                 navController = navController
             )
+        }
         composable<Screen.Follow> {
             FollowScreen(followController = followController, navController = navController)
         }

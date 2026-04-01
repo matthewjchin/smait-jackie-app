@@ -24,3 +24,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "SMAIT"
 include(":app")
+//include(":chin-app")
