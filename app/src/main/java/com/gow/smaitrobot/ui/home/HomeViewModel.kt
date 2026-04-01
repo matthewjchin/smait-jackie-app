@@ -125,6 +125,7 @@ class HomeViewModel(
                     "home" -> Screen.Home
                     "photobooth" -> Screen.PhotoBooth
                     "settings" -> Screen.Settings
+                    "follow" -> Screen.Follow
                     else -> return CardAction.ShowInlineContent(action)
                 }
                 CardAction.NavigateToTab(screen)

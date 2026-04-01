@@ -42,6 +42,12 @@
       "description": "Schedule, speakers, and venue info"
     },
     {
+      "label": "Follow Me",
+      "action": "navigate:follow",
+      "icon": "follow",
+      "description": "Robot follows you around"
+    },
+    {
       "label": "Settings",
       "action": "navigate:settings",
       "icon": "settings",

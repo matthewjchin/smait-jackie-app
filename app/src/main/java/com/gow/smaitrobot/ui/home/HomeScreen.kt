@@ -25,6 +25,7 @@ import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Map
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.PhotoCamera
+import androidx.compose.material.icons.filled.DirectionsWalk
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.AlertDialog
@@ -299,6 +300,7 @@ private fun cardIcon(iconName: String): ImageVector = when (iconName) {
     "settings" -> Icons.Filled.Settings
     "web" -> Icons.Filled.Language
     "camera" -> Icons.Filled.PhotoCamera
+    "follow" -> Icons.Filled.DirectionsWalk
     else -> Icons.Filled.Info
 }
 

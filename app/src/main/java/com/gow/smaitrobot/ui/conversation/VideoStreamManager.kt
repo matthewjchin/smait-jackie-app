@@ -41,7 +41,7 @@ class VideoStreamManager(private val wsRepo: WebSocketRepository) {
         private const val FRAME_WIDTH = 320
         private const val FRAME_HEIGHT = 240
         private const val JPEG_QUALITY = 60
-        private const val MIN_FRAME_INTERVAL_MS = 100L // ~10fps
+        private const val MIN_FRAME_INTERVAL_MS = 50L // ~20fps (Nyquist for 7Hz lip oscillation)
         private const val MAX_SESSION_RETRIES = 15
         private const val SESSION_RETRY_DELAY_MS = 200L
     }
