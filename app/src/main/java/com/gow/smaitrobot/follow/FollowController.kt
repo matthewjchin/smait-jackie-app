@@ -29,7 +29,7 @@ import java.util.concurrent.Executors
  * Runs entirely on-device (no server needed). Uses the existing ChassisProxy
  * to send cmd_vel commands to Jackie's chassis via rosbridge.
  *
- * Behaviours (FSM):
+ * Behaviors (FSM):
  * - FOLLOW:    Face detected within range -> track with PID
  * - SCAN:      No face / out of range -> rotate 45 deg CCW, retry
  * - OBSTACLE:  Obstacle ahead -> rotate 90 deg CW, resume
@@ -276,14 +276,14 @@ class FollowController(
         currentDistance = distM
 
         when (fsmState) {
-            FsmState.FOLLOWING -> {
-                if (faceBounds == null || distM > FOLLOW_DISTANCE_M) {
-                    Log.d(TAG, "Face lost / out of range - scanning")
-                    enterState(FsmState.SCAN_ROTATE)
-                    return
-                }
-                driveTowardFace(faceBounds, distM)
-            }
+//            FsmState.FOLLOWING -> {
+//                if (faceBounds == null || distM > FOLLOW_DISTANCE_M) {
+//                    Log.d(TAG, "Face lost / out of range - scanning")
+//                    enterState(FsmState.SCAN_ROTATE)
+//                    return
+//                }
+//                driveTowardFace(faceBounds, distM)
+//            }
 
             FsmState.SCAN_ROTATE -> {
                 if (SystemClock.elapsedRealtime() < manoeuvreEndMs) {
@@ -367,7 +367,7 @@ class FollowController(
         currentState = next
         val now = SystemClock.elapsedRealtime()
         when (next) {
-            FsmState.SCAN_ROTATE -> startManoeuvre(DEG_45_RAD)
+//            FsmState.SCAN_ROTATE -> startManoeuvre(DEG_45_RAD)
 
             // In enterState, when transitioning to SCAN_ROTATE:
             FsmState.SCAN_ROTATE -> {
