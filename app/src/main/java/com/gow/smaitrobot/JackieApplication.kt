@@ -4,6 +4,7 @@ import android.app.Application
 import android.content.Context
 import com.gow.smaitrobot.data.theme.ThemeRepository
 import com.gow.smaitrobot.data.websocket.WebSocketRepository
+import com.gow.smaitrobot.ChassisProxy
 import okhttp3.OkHttpClient
 import java.util.concurrent.TimeUnit
 

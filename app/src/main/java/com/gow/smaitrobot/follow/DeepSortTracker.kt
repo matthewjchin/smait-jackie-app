@@ -68,45 +68,81 @@ class DeepSortTracker {
         }
 
         /**
-         * Simplified O(n^3) Hungarian algorithm for assignment.
-         * Returns array where result[trackIdx] = detectionIdx (-1 if unmatched).
+         * Full Munkres / Hungarian assignment.
+         * Returns result[trackIdx] = detectionIdx, or -1 if unmatched.
+         *
+         * Fixes vs. original:
+         *  - Pads non-square matrices with INF (not 0) so phantom cells are never preferred
+         *  - Uses shortest-augmenting-path to guarantee globally optimal assignment
+         *  - Gates output so tracks assigned to phantom columns return -1
          */
         private fun hungarian(cost: Array<DoubleArray>, nR: Int, nC: Int): IntArray {
             if (nR == 0 || nC == 0) return IntArray(nR) { -1 }
             val n = maxOf(nR, nC)
+            val INF = 1e18
+
+            // Pad to square with INF so phantom cells are never preferred
             val c = Array(n) { i ->
                 DoubleArray(n) { j ->
-                    if (i < nR && j < nC) cost[i][j] else 0.0
+                    if (i < nR && j < nC) cost[i][j] else INF
                 }
             }
 
-            // Row reduction
-            for (i in 0 until n) {
-                val min = c[i].min()
-                for (j in 0 until n) c[i][j] -= min
-            }
-            // Column reduction
-            for (j in 0 until n) {
-                var min = Double.MAX_VALUE
-                for (i in 0 until n) if (c[i][j] < min) min = c[i][j]
-                for (i in 0 until n) c[i][j] -= min
+            // Dual variables for rows (u) and columns (v) — 1-indexed internally
+            val u   = DoubleArray(n + 1)
+            val v   = DoubleArray(n + 1)
+            val p   = IntArray(n + 1)      // p[j] = row currently assigned to column j
+            val way = IntArray(n + 1)      // augmenting path back-pointer
+
+            for (i in 1..n) {
+                p[0] = i
+                var j0 = 0
+                val minDist = DoubleArray(n + 1) { INF }
+                val used    = BooleanArray(n + 1)
+
+                // Dijkstra-like shortest augmenting path
+                do {
+                    used[j0] = true
+                    val i0 = p[j0]
+                    var delta = INF
+                    var j1 = -1
+                    for (j in 1..n) {
+                        if (!used[j]) {
+                            val cur = c[i0 - 1][j - 1] - u[i0] - v[j]
+                            if (cur < minDist[j]) {
+                                minDist[j] = cur
+                                way[j] = j0
+                            }
+                            if (minDist[j] < delta) {
+                                delta = minDist[j]
+                                j1 = j
+                            }
+                        }
+                    }
+                    // Update potentials
+                    for (j in 0..n) {
+                        if (used[j]) { u[p[j]] += delta; v[j] -= delta }
+                        else minDist[j] -= delta
+                    }
+                    j0 = j1
+                } while (p[j0] != 0)
+
+                // Flip augmenting path
+                do {
+                    val j1 = way[j0]
+                    p[j0] = p[j1]
+                    j0 = j1
+                } while (j0 != 0)
             }
 
-            val starRow = IntArray(n) { -1 }
-            val starCol = IntArray(n) { -1 }
-            val rCover = IntArray(n)
-            val cCover = IntArray(n)
-
-            for (i in 0 until n) for (j in 0 until n) {
-                if (c[i][j] == 0.0 && rCover[i] == 0 && cCover[j] == 0) {
-                    starRow[i] = j; starCol[j] = i
-                    rCover[i] = 1; cCover[j] = 1
-                }
-            }
-
+            // Read results — gate out phantom column assignments
             val result = IntArray(nR) { -1 }
-            for (i in 0 until nR) {
-                if (starRow[i] in 0 until nC) result[i] = starRow[i]
+            for (j in 1..n) {
+                val row = p[j] - 1
+                val col = j - 1
+                if (row in 0 until nR && col in 0 until nC) {
+                    result[row] = col
+                }
             }
             return result
         }

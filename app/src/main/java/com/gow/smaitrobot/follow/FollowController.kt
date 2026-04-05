@@ -21,6 +21,7 @@ import com.google.mediapipe.tasks.vision.core.RunningMode
 import com.google.mediapipe.tasks.vision.facelandmarker.FaceLandmarker
 import com.google.mediapipe.tasks.vision.facelandmarker.FaceLandmarkerResult
 import org.json.JSONObject
+import java.lang.Math.hypot
 import java.util.concurrent.Executors
 
 /**
@@ -48,7 +49,7 @@ class FollowController(
 
         // Thresholds (metres)
         private const val FOLLOW_DISTANCE_M = 2.0
-        private const val COLLISION_DISTANCE_M = 0.10
+        private const val COLLISION_DISTANCE_M = 0.50
         private const val TARGET_FOLLOW_DISTANCE_M = 0.8   // ← was hardcoded to 0.5; now explicit
         private const val PAN_FF_GAIN = 0.002              // feed-forward gain (tune to taste)
 
@@ -127,6 +128,43 @@ class FollowController(
 
         Log.i(TAG, "Follow mode started")
     }
+
+    /**
+     * Send a rosbridge subscribe message for /amcl_pose
+     *
+     */
+    private fun subscribeToRobotPose(sender: (String) -> Unit) {
+        val msg = JSONObject().apply {
+            put("op", "subscribe")
+            put("topic", "/amcl_pose")
+            put("type", "geometry_msgs/PoseWithCovarianceStamped")
+        }
+        sender(msg.toString())
+    }
+
+    // Store the latest robot's positions
+    private var robotX: Double = 0.0
+    private var robotY: Double = 0.0
+    private var robotYaw: Double = 0.0   // radians, derived from quaternion - "theta"
+
+    // Call this when a /amcl_pose message arrives
+    fun onPoseReceived(payload: JSONObject) {
+        val pose = payload
+            .getJSONObject("msg")
+            .getJSONObject("pose")
+            .getJSONObject("pose")
+        robotX = pose.getJSONObject("position").getDouble("x")
+        robotY = pose.getJSONObject("position").getDouble("y")
+        robotYaw = quaternionToYaw(pose.getJSONObject("orientation"))
+    }
+
+    private fun quaternionToYaw(q: JSONObject): Double {
+        val z = q.getDouble("z")
+        val w = q.getDouble("w")
+        return 2.0 * Math.atan2(z, w)   // yaw from quaternion for 2D navigation
+    }
+
+
 
     /**
      * Stop following, release camera and MediaPipe resources.
@@ -276,15 +314,6 @@ class FollowController(
         currentDistance = distM
 
         when (fsmState) {
-//            FsmState.FOLLOWING -> {
-//                if (faceBounds == null || distM > FOLLOW_DISTANCE_M) {
-//                    Log.d(TAG, "Face lost / out of range - scanning")
-//                    enterState(FsmState.SCAN_ROTATE)
-//                    return
-//                }
-//                driveTowardFace(faceBounds, distM)
-//            }
-
             FsmState.SCAN_ROTATE -> {
                 if (SystemClock.elapsedRealtime() < manoeuvreEndMs) {
                     // Adjust speed and direction of rotation
@@ -344,6 +373,48 @@ class FollowController(
 
         }
     }
+
+    private fun estimateTargetWorldPosition(face: Rect, distM: Double): Pair<Double, Double> {
+        // Horizontal angle offset from camera centre (positive = target is to the right)
+        val dx = face.centerX() - FRAME_WIDTH_PX / 2.0
+        val panAngleRad = Math.atan2(dx, FOCAL_LENGTH_PX)   // angle in camera frame
+
+        // World angle = robot heading + camera pan angle
+        val worldAngle = robotYaw + panAngleRad
+
+        // Project forward by distM in world frame
+        val targetX = robotX + distM * Math.cos(worldAngle)
+        val targetY = robotY + distM * Math.sin(worldAngle)
+
+        return Pair(targetX, targetY)
+    }
+
+    private fun sendNavigationGoal(x: Double, y: Double, yaw: Double = 0.0) {
+        // Convert yaw back to quaternion for PoseStamped
+        val qz = Math.sin(yaw / 2.0)
+        val qw = Math.cos(yaw / 2.0)
+
+        val msg = JSONObject().apply {
+            put("op", "publish")
+            put("topic", "/move_base_simple/goal")
+            put("msg", JSONObject().apply {
+                put("header", JSONObject().apply {
+                    put("frame_id", "map")
+                })
+                put("pose", JSONObject().apply {
+                    put("position", JSONObject().apply {
+                        put("x", x); put("y", y); put("z", 0.0)
+                    })
+                    put("orientation", JSONObject().apply {
+                        put("x", 0.0); put("y", 0.0)
+                        put("z", qz); put("w", qw)
+                    })
+                })
+            })
+        }
+        chassisSender(msg.toString())
+    }
+
 
     // ── PID drive toward face ──────────────────────────────────────────────
 
@@ -431,6 +502,21 @@ class FollowController(
         chassisSender(msg.toString())
     }
 
+    private var lastGoalX = 0.0
+    private var lastGoalY = 0.0
+    private val GOAL_UPDATE_THRESHOLD_M = 0.2   // only re-goal if person moved >20cm
+
+    private fun maybeUpdateGoal(face: Rect, distM: Double) {
+        val (tx, ty) = estimateTargetWorldPosition(face, distM)
+        val moved = hypot(tx - lastGoalX, ty - lastGoalY)
+        if (moved > GOAL_UPDATE_THRESHOLD_M) {
+            sendNavigationGoal(tx, ty)
+            lastGoalX = tx
+            lastGoalY = ty
+        }
+    }
+
+
     private fun driveTowardFace(face: Rect, distM: Double, targetTrack: KalmanTrack) {
         // Real dt from actual frame cadence
         val nowMs = SystemClock.elapsedRealtime()
@@ -459,6 +545,7 @@ class FollowController(
         if (distM < COLLISION_DISTANCE_M + 0.05) linX = 0f
 
         sendVelocity(linX, angZ)
+        maybeUpdateGoal(face, distM)
     }
 
     private fun startManoeuvre(angleRad: Double, dir: Float = 1f) {

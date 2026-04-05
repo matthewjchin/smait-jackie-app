@@ -40,6 +40,12 @@
       "action": "url:https://2026.siliconvalleywie.org/",
       "icon": "web",
       "description": "Visit the SV WiE 2026 conference website"
+    },
+    {
+      "label": "Follow Me",
+      "action": "navigate:follow",
+      "icon": "follow",
+      "description": "Robot follows you around"
     }
   ],
   "sponsors": [

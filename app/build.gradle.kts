@@ -18,7 +18,7 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
         ndk {
-            abiFilters += "armeabi-v7a"
+            abiFilters += listOf("armeabi-v7a", "arm64-v8a")
         }
     }
 
@@ -36,9 +36,9 @@ android {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
-    kotlin {
-        jvmToolchain(17)
-    }
+//    kotlin {
+//        jvmToolchain(17)
+//    }
 
     buildFeatures {
         compose = true
@@ -90,6 +90,9 @@ dependencies {
 
     // MediaPipe Face Landmarker (Follow Mode)
     implementation("com.google.mediapipe:tasks-vision:0.10.14")
+
+//    // Optical flow and machine perception for facial recognition
+//    implementation("org.opencv:opencv:4.9.0")  // OpenCV Android Maven artifact
 
     // CameraX (Follow Mode — on-device face tracking camera)
     implementation("androidx.camera:camera-camera2:1.3.1")

@@ -184,6 +184,22 @@ fun HomeScreen(
                             )
                         }
                     }
+                    // Third row — Follow Me (full width)
+                    Row(
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        cards.getOrNull(4)?.let { card ->
+                            HomeCard(
+                                card = card,
+                                cardIndex = 4,
+                                onClick = { handleCardClick(card, viewModel, navController) { inlineContentKey = it } },
+                                modifier = Modifier.weight(1f).fillMaxHeight()
+                            )
+                        }
+                    }
                 }
             }
 
