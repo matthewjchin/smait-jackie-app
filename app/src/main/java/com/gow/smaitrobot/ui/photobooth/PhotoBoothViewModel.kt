@@ -39,11 +39,14 @@ sealed class PhotoBoothUiState {
      * Style result received. [rawBitmap] is the original capture.
      * [styledBitmap] arrives from server; null if style transfer failed (graceful degradation).
      * [downloadUrl] arrives from server's qr_code message.
+     * [styleKey] is the registry key the user picked (e.g. "cyberpunk") — lets the
+     * ResultScreen pick a style-matched theme and confetti palette.
      */
     data class Result(
         val rawBitmap: Bitmap?,
         val styledBitmap: Bitmap?,
-        val downloadUrl: String?
+        val downloadUrl: String?,
+        val styleKey: String? = null
     ) : PhotoBoothUiState()
 }
 
@@ -257,11 +260,13 @@ class PhotoBoothViewModel(
         processingWatchdog?.cancel()
         processingWatchdog = scope.launch {
             delay(PROCESSING_TIMEOUT_MS)
-            if (_uiState.value is PhotoBoothUiState.Processing) {
+            val current = _uiState.value
+            if (current is PhotoBoothUiState.Processing) {
                 _uiState.value = PhotoBoothUiState.Result(
                     rawBitmap = rawBitmap,
                     styledBitmap = null,
-                    downloadUrl = null
+                    downloadUrl = null,
+                    styleKey = current.styleName
                 )
             }
         }
@@ -312,7 +317,8 @@ class PhotoBoothViewModel(
                     _uiState.value = PhotoBoothUiState.Result(
                         rawBitmap = rawBitmap,
                         styledBitmap = styledBitmap,
-                        downloadUrl = null
+                        downloadUrl = null,
+                        styleKey = current.styleName
                     )
                 }
             }
@@ -331,7 +337,8 @@ class PhotoBoothViewModel(
                     _uiState.value = PhotoBoothUiState.Result(
                         rawBitmap = rawBitmap,
                         styledBitmap = null,
-                        downloadUrl = null
+                        downloadUrl = null,
+                        styleKey = current.styleName
                     )
                 }
             }
