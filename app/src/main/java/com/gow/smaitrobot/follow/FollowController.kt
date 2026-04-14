@@ -34,7 +34,7 @@ import java.util.concurrent.Executors
  * - OBSTACLE:  Obstacle ahead -> rotate 90 deg CW, resume
  * - COLLISION: Object < 0.1m -> stop 3s, rotate 45 deg CW
  *
- * Ported from Jason's RobotController.java, integrated with Jackie app architecture.
+ * Ported from the original Android RobotController, integrated with Jackie app architecture.
  *
  * @param chassisSender Callback to send rosbridge JSON through ChassisProxy.
  *                      Expects a cmd_vel Twist JSON string.
@@ -360,7 +360,7 @@ class FollowController(
         // Build rosbridge cmd_vel publish message
         val msg = JSONObject().apply {
             put("op", "publish")
-            put("topic", "/cmd_vel")
+            put("topic", "/cmd_vel_mux/input/navi_override")
             put("msg", JSONObject().apply {
                 put("linear", JSONObject().apply {
                     put("x", linearX.toDouble())

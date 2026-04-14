@@ -8,7 +8,7 @@ import android.graphics.Rect
  * State vector: [cx, cy, w, h, vx, vy, vw, vh]
  * Constant-velocity motion model with 8-state Kalman filter.
  *
- * Ported from Jason's RobotController.java KalmanTrack.
+ * Ported from the original Android RobotController KalmanTrack.
  */
 class KalmanTrack(detection: Rect) {
 

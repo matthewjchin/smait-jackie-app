@@ -3,7 +3,7 @@ package com.gow.smaitrobot.follow
 /**
  * Simple PID controller for smooth chassis motion control.
  *
- * Ported from Jason's RobotController.java PidController.
+ * Ported from the original Android RobotController PidController.
  */
 class PidController(
     private val kp: Double,

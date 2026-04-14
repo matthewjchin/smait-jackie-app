@@ -57,7 +57,7 @@ private val SurfaceWhite = Color(0xFFFAFAFA)
 private val SubtleGray = Color(0xFF888888)
 
 /**
- * Full-screen post-interaction survey overlay for WiE 2026 data collection.
+ * Full-screen post-interaction survey overlay for event data collection.
  *
  * Collects 5 items (star rating + 4 Likert questions) plus an optional comment.
  * Auto-dismisses after 20 seconds with a visible countdown timer.
