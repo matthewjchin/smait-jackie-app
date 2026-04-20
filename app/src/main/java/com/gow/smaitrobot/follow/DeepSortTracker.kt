@@ -67,67 +67,103 @@ class DeepSortTracker {
             return if (union <= 0) 0f else inter / union
         }
 
+
+//        // Simplified O(n³) Hungarian algorithm
+//        private fun hungarian(cost: Array<DoubleArray>, nR: Int, nC: Int): IntArray {
+//            if (nR == 0 || nC == 0) return IntArray(nR) { -1 }
+//            val n = max(nR, nC)
+//
+//            // Pad cost matrix to square
+//            val c = Array(n) { i -> DoubleArray(n) { j ->
+//                if (i < nR && j < nC) cost[i][j] else 0.0
+//            }}
+//
+//            // Row and column reduction
+//            for (i in 0 until n) {
+//                val min = c[i].min()
+//                for (j in 0 until n) c[i][j] -= min
+//            }
+//            for (j in 0 until n) {
+//                val min = (0 until n).minOf { c[it][j] }
+//                for (i in 0 until n) c[i][j] -= min
+//            }
+//
+//            // Star zeros greedily
+//            val starRow = IntArray(n) { -1 }
+//            val starCol = IntArray(n) { -1 }
+//            val rCover  = IntArray(n); val cCover = IntArray(n)
+//
+//            for (i in 0 until n) for (j in 0 until n)
+//                if (c[i][j] == 0.0 && rCover[i] == 0 && cCover[j] == 0) {
+//                    starRow[i] = j; starCol[j] = i
+//                    rCover[i]  = 1; cCover[j]  = 1
+//                }
+//
+//            return IntArray(nR) { i ->
+//                val j = starRow[i]
+//                if (j in 0 until nC) j else -1
+//            }
+//        }
+
         /**
-         * Full Munkres / Hungarian assignment.
+         * Hungarian assignment using the shortest augmenting path algorithm (O(n³)).
          * Returns result[trackIdx] = detectionIdx, or -1 if unmatched.
-         *
-         * Fixes vs. original:
-         *  - Pads non-square matrices with INF (not 0) so phantom cells are never preferred
-         *  - Uses shortest-augmenting-path to guarantee globally optimal assignment
-         *  - Gates output so tracks assigned to phantom columns return -1
          */
         private fun hungarian(cost: Array<DoubleArray>, nR: Int, nC: Int): IntArray {
-            if (nR == 0 || nC == 0) return IntArray(nR) { -1 }
+            if (nR == 0) return IntArray(0)
+            if (nC == 0) return IntArray(nR) { -1 }
             val n = maxOf(nR, nC)
-            val INF = 1e18
+            val INF = 1e9
 
-            // Pad to square with INF so phantom cells are never preferred
-            val c = Array(n) { i ->
-                DoubleArray(n) { j ->
-                    if (i < nR && j < nC) cost[i][j] else INF
+            // Pad to square and use 1-based indexing for the algorithm
+            val c = Array(n + 1) { i ->
+                DoubleArray(n + 1) { j ->
+                    if (i > 0 && j > 0 && i <= nR && j <= nC) cost[i - 1][j - 1] else if (i > 0 && j > 0) INF else 0.0
                 }
             }
 
-            // Dual variables for rows (u) and columns (v) — 1-indexed internally
-            val u   = DoubleArray(n + 1)
-            val v   = DoubleArray(n + 1)
-            val p   = IntArray(n + 1)      // p[j] = row currently assigned to column j
-            val way = IntArray(n + 1)      // augmenting path back-pointer
+            val u = DoubleArray(n + 1)
+            val v = DoubleArray(n + 1)
+            val p = IntArray(n + 1)
+            val way = IntArray(n + 1)
 
             for (i in 1..n) {
                 p[0] = i
                 var j0 = 0
-                val minDist = DoubleArray(n + 1) { INF }
-                val used    = BooleanArray(n + 1)
-
-                // Dijkstra-like shortest augmenting path
+                val minV = DoubleArray(n + 1) { INF }
+                val used = BooleanArray(n + 1)
                 do {
                     used[j0] = true
                     val i0 = p[j0]
                     var delta = INF
-                    var j1 = -1
+                    var j1 = 0
                     for (j in 1..n) {
                         if (!used[j]) {
-                            val cur = c[i0 - 1][j - 1] - u[i0] - v[j]
-                            if (cur < minDist[j]) {
-                                minDist[j] = cur
+                            val cur = c[i0][j] - u[i0] - v[j]
+                            if (cur < minV[j]) {
+                                minV[j] = cur
                                 way[j] = j0
                             }
-                            if (minDist[j] < delta) {
-                                delta = minDist[j]
+                            if (minV[j] < delta) {
+                                delta = minV[j]
                                 j1 = j
                             }
                         }
                     }
-                    // Update potentials
+                    // If no valid edge found, pick first unused column to avoid infinite loop
+                    if (j1 == 0) {
+                        for (j in 1..n) if (!used[j]) { j1 = j; break }
+                    }
                     for (j in 0..n) {
-                        if (used[j]) { u[p[j]] += delta; v[j] -= delta }
-                        else minDist[j] -= delta
+                        if (used[j]) {
+                            u[p[j]] += delta
+                            v[j] -= delta
+                        } else {
+                            minV[j] -= delta
+                        }
                     }
                     j0 = j1
                 } while (p[j0] != 0)
-
-                // Flip augmenting path
                 do {
                     val j1 = way[j0]
                     p[j0] = p[j1]
@@ -135,13 +171,10 @@ class DeepSortTracker {
                 } while (j0 != 0)
             }
 
-            // Read results — gate out phantom column assignments
             val result = IntArray(nR) { -1 }
             for (j in 1..n) {
-                val row = p[j] - 1
-                val col = j - 1
-                if (row in 0 until nR && col in 0 until nC) {
-                    result[row] = col
+                if (p[j] > 0 && p[j] <= nR && j <= nC) {
+                    result[p[j] - 1] = j - 1
                 }
             }
             return result

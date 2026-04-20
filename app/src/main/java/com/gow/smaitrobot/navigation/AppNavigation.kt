@@ -1,97 +1,60 @@
 package com.gow.smaitrobot.navigation
 
 import android.content.Context
-import android.os.Build
 import android.util.Log
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import androidx.navigation.toRoute
 import com.gow.smaitrobot.CaeAudioManager
 import com.gow.smaitrobot.ChassisProxy
 import com.gow.smaitrobot.StandardAudioManager
-import com.gow.smaitrobot.TtsAudioPlayer
+import com.gow.smaitrobot.ui.conversation.VideoStreamManager
 import com.gow.smaitrobot.data.model.ThemeConfig
+import com.gow.smaitrobot.data.websocket.WebSocketRepository
+import com.gow.smaitrobot.follow.FollowController
 import com.gow.smaitrobot.jackieApp
 import com.gow.smaitrobot.ui.conversation.ConversationScreen
 import com.gow.smaitrobot.ui.conversation.ConversationViewModel
-import com.gow.smaitrobot.ui.conversation.VideoStreamManager
-import com.gow.smaitrobot.ui.eventinfo.EventInfoScreen
-import com.gow.smaitrobot.ui.eventinfo.EventInfoViewModel
-import com.gow.smaitrobot.ui.facilities.FacilitiesScreen
-import com.gow.smaitrobot.ui.facilities.FacilitiesViewModel
+import com.gow.smaitrobot.ui.follow.FollowScreen
 import com.gow.smaitrobot.ui.home.HomeScreen
 import com.gow.smaitrobot.ui.home.HomeViewModel
-import com.gow.smaitrobot.ui.navigation_map.NavigationMapScreen
-import com.gow.smaitrobot.ui.navigation_map.NavigationMapViewModel
 import com.gow.smaitrobot.ui.settings.SettingsScreen
-import com.gow.smaitrobot.ui.photobooth.PhotoBoothScreen
-import com.gow.smaitrobot.ui.web.WebViewScreen
-import com.gow.smaitrobot.follow.FollowController
-import com.gow.smaitrobot.ui.follow.FollowScreen
 
 private const val TAG = "AppNavigation"
 
 /**
- * Server URL for WebSocket connection.
- * - Emulator: 10.0.2.2 maps to the host machine's localhost
- * - Jackie: use the lab PC's IP address on the WiFi network
+ * Root navigation for the Jackie app.
+ *
+ * Hosts the [NavHost] and global state objects (repos, managers) that must
+ * persist across screen changes.
  */
-private const val EMULATOR_WS_URL = "ws://10.0.2.2:8765"
-private const val JACKIE_WS_URL = "ws://192.168.1.100:8765" // Override per-lab
-
 @Composable
 fun AppScaffold(
     navController: NavHostController,
     themeConfig: ThemeConfig
 ) {
     val context = LocalContext.current
-    val wsRepo = context.jackieApp.webSocketRepository
-    val themeRepo = context.jackieApp.themeRepository
-    val isEmulator = remember { isEmulatorDevice() }
+    val lifecycleOwner = LocalLifecycleOwner.current
+    val isEmulator = android.os.Build.PRODUCT.contains("sdk") || android.os.Build.MODEL.contains("Emulator")
 
-    val homeViewModel: HomeViewModel = viewModel(
-        factory = object : androidx.lifecycle.ViewModelProvider.Factory {
-            @Suppress("UNCHECKED_CAST")
-            override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T =
-                HomeViewModel(themeRepo) as T
-        }
-    )
-    val eventInfoViewModel: EventInfoViewModel = viewModel(
-        factory = object : androidx.lifecycle.ViewModelProvider.Factory {
-            @Suppress("UNCHECKED_CAST")
-            override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T =
-                EventInfoViewModel(themeRepo) as T
-        }
-    )
-    val navMapViewModel: NavigationMapViewModel = viewModel(
-        factory = object : androidx.lifecycle.ViewModelProvider.Factory {
-            @Suppress("UNCHECKED_CAST")
-            override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T =
-                NavigationMapViewModel(wsRepo) as T
-        }
-    )
-    val facilitiesViewModel: FacilitiesViewModel = viewModel(
-        factory = object : androidx.lifecycle.ViewModelProvider.Factory {
-            @Suppress("UNCHECKED_CAST")
-            override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T =
-                FacilitiesViewModel(wsRepo) as T
-        }
-    )
+    // Core Repositories + Managers
+    val wsRepo = remember { context.jackieApp.webSocketRepository }
+    val themeRepo = remember { context.jackieApp.themeRepository }
     val ttsPlayer = remember { context.jackieApp.ttsAudioPlayer }
     val caeAudioManager = remember { CaeAudioManager(context) }
     val standardAudioManager = remember { if (isEmulator) StandardAudioManager() else null }
     val videoStreamManager = remember { VideoStreamManager(wsRepo) }
+    val homeViewModel = remember { HomeViewModel(themeRepo) }
     val conversationViewModel = remember {
         ConversationViewModel(
             wsRepo = wsRepo,
@@ -100,17 +63,11 @@ fun AppScaffold(
             videoStreamManager = videoStreamManager
         )
     }
+
     val followController = remember {
         FollowController(
             chassisSender = { json ->
-                // Route through chassis proxy: wrap as chassis_cmd for the server protocol
-                val envelope = org.json.JSONObject().apply {
-                    put("type", "chassis_cmd")
-                    put("payload", org.json.JSONObject(json))
-                }
-                // Send directly to chassis proxy (bypasses server)
-                context.jackieApp.chassisProxy?.forwardToChassisRaw(json)
-                    ?: Log.w("AppNavigation", "FollowController: no ChassisProxy — cmd_vel dropped")
+                context.jackieApp.chassisProxy.forwardToChassisRaw(json)
             }
         )
     }
@@ -147,16 +104,6 @@ fun AppScaffold(
                 } else {
                     Log.w(TAG, "WebSocket connected but currentWebSocket is null")
                 }
-
-                // Start chassis proxy — bridges server ↔ chassis (192.168.20.22:9090)
-                val proxy = ChassisProxy(
-                    chassisUrl = "ws://192.168.20.22:9090",
-                    serverSender = { json: String -> wsRepo.send(json) }
-                )
-                proxy.connect()
-                context.jackieApp.chassisProxy = proxy
-                wsRepo.chassisProxy = proxy
-                Log.i(TAG, "Started ChassisProxy")
             }
             videoStreamManager.start(context)
             Log.i(TAG, "Started VideoStreamManager")
@@ -181,58 +128,27 @@ fun AppScaffold(
         modifier = Modifier.fillMaxSize()
     ) {
         composable<Screen.Home> {
-            HomeScreen(viewModel = homeViewModel, navController = navController)
+            HomeScreen(
+                viewModel = homeViewModel,
+                navController = navController
+            )
         }
         composable<Screen.Chat> {
-            ConversationScreen(viewModel = conversationViewModel, navController = navController)
-        }
-        composable<Screen.Map> {
-            NavigationMapScreen(viewModel = navMapViewModel, navController = navController)
-        }
-        composable<Screen.Facilities> {
-            FacilitiesScreen(viewModel = facilitiesViewModel, navController = navController)
-        }
-        composable<Screen.EventInfo> {
-            EventInfoScreen(viewModel = eventInfoViewModel, navController = navController)
-        }
-        composable<Screen.PhotoBooth> {
-            PhotoBoothScreen(navController = navController, wsRepo = wsRepo)
-        }
-        composable<Screen.Settings> {
-            SettingsScreen(navController = navController)
-        }
-        composable<Screen.Web> { backStackEntry ->
-            val screen = try {
-                backStackEntry.toRoute<Screen.Web>()
-            } catch (e: Exception) {
-                Log.w(TAG, "Failed to parse Web route: ${e.message}")
-                null
-            }
-            WebViewScreen(
-                url = screen?.url ?: "https://2026.siliconvalleywie.org/",
+            ConversationScreen(
+                viewModel = conversationViewModel,
                 navController = navController
             )
         }
         composable<Screen.Follow> {
-            FollowScreen(followController = followController, navController = navController)
+            FollowScreen(
+                followController = followController,
+                navController = navController
+            )
+        }
+        composable<Screen.Settings> {
+            SettingsScreen(
+                navController = navController
+            )
         }
     }
-}
-
-/**
- * Detects whether the app is running on an Android emulator.
- */
-private fun isEmulatorDevice(): Boolean {
-    return (Build.FINGERPRINT.startsWith("generic")
-            || Build.FINGERPRINT.startsWith("unknown")
-            || Build.MODEL.contains("google_sdk")
-            || Build.MODEL.contains("Emulator")
-            || Build.MODEL.contains("Android SDK built for x86")
-            || Build.MODEL.contains("sdk_gphone")
-            || Build.MANUFACTURER.contains("Genymotion")
-            || Build.BRAND.startsWith("generic")
-            || Build.DEVICE.startsWith("generic")
-            || Build.PRODUCT.contains("sdk")
-            || Build.HARDWARE.contains("goldfish")
-            || Build.HARDWARE.contains("ranchu"))
 }

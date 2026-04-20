@@ -50,6 +50,8 @@ private const val PREFS_NAME = "smait_settings"
 private const val KEY_VOLUME = "tts_volume"
 private const val KEY_SERVER_IP = "server_ip"
 private const val KEY_SERVER_PORT = "server_port"
+private const val KEY_CHASSIS_IP = "chassis_ip"
+private const val KEY_CHASSIS_PORT = "chassis_port"
 
 private val WieNavy = Color(0xFF1B0A6E)
 private val WieTeal = Color(0xFF00A99D)
@@ -89,6 +91,20 @@ fun SettingsScreen(
                 ) {
                     Column(modifier = Modifier.padding(24.dp)) {
                         ServerConnectionSection(wsRepo = wsRepo, context = context)
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                Card(
+                    colors = CardDefaults.cardColors(
+                        containerColor = Color.White.copy(alpha = 0.85f)
+                    ),
+                    shape = RoundedCornerShape(16.dp),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                ) {
+                    Column(modifier = Modifier.padding(24.dp)) {
+                        ChassisConnectionSection(context = context)
                     }
                 }
 
@@ -204,6 +220,92 @@ private fun ServerConnectionSection(wsRepo: WebSocketRepository, context: Contex
         ) {
             Text(
                 if (isConnected) "Reconnect" else "Connect",
+                fontSize = 22.sp,
+                fontWeight = FontWeight.Bold
+            )
+        }
+    }
+}
+
+@Composable
+private fun ChassisConnectionSection(context: Context) {
+    val chassisProxy = context.jackieApp.chassisProxy
+    val prefs = remember { context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE) }
+
+    var chassisIp   by remember { mutableStateOf(prefs.getString(KEY_CHASSIS_IP,   "192.168.20.22") ?: "192.168.20.22") }
+    var chassisPort by remember { mutableStateOf(prefs.getString(KEY_CHASSIS_PORT,  "9090")          ?: "9090") }
+    var isConnected by remember { mutableStateOf(chassisProxy.connected) }
+
+    Text(
+        text = "Chassis (Rosbridge)",
+        color = WieNavy,
+        fontSize = 30.sp,
+        fontWeight = FontWeight.Bold
+    )
+
+    Spacer(modifier = Modifier.height(16.dp))
+
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Box(
+            modifier = Modifier
+                .size(16.dp)
+                .clip(CircleShape)
+                .background(if (isConnected) Color(0xFF4CAF50) else Color(0xFFF44336))
+        )
+        Spacer(modifier = Modifier.width(12.dp))
+        Text(
+            text = if (isConnected) "Connected" else "Disconnected",
+            color = if (isConnected) Color(0xFF4CAF50) else Color(0xFFF44336),
+            fontSize = 24.sp,
+            fontWeight = FontWeight.Medium
+        )
+    }
+
+    Spacer(modifier = Modifier.height(20.dp))
+
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        OutlinedTextField(
+            value = chassisIp,
+            onValueChange = { chassisIp = it },
+            label = { Text("Chassis IP", fontSize = 20.sp) },
+            modifier = Modifier.weight(2f),
+            singleLine = true,
+            shape = RoundedCornerShape(12.dp),
+            textStyle = androidx.compose.ui.text.TextStyle(fontSize = 22.sp)
+        )
+        OutlinedTextField(
+            value = chassisPort,
+            onValueChange = { chassisPort = it },
+            label = { Text("Port", fontSize = 20.sp) },
+            modifier = Modifier.weight(1f),
+            singleLine = true,
+            shape = RoundedCornerShape(12.dp),
+            textStyle = androidx.compose.ui.text.TextStyle(fontSize = 22.sp)
+        )
+    }
+
+    Spacer(modifier = Modifier.height(20.dp))
+
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.End
+    ) {
+        Button(
+            onClick = {
+                prefs.edit()
+                    .putString(KEY_CHASSIS_IP, chassisIp)
+                    .putString(KEY_CHASSIS_PORT, chassisPort)
+                    .apply()
+                chassisProxy.reconnect("ws://$chassisIp:$chassisPort")
+                isConnected = chassisProxy.connected
+            },
+            colors = ButtonDefaults.buttonColors(containerColor = WieTeal)
+        ) {
+            Text(
+                text = if (isConnected) "Reconnect" else "Connect",
                 fontSize = 22.sp,
                 fontWeight = FontWeight.Bold
             )

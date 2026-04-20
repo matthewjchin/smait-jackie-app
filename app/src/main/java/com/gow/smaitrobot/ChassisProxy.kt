@@ -22,7 +22,7 @@ import java.util.concurrent.TimeUnit
  * The proxy is a dumb pipe — it does not parse rosbridge semantics.
  */
 class ChassisProxy(
-    private val chassisUrl: String = "ws://192.168.20.22:9090",
+    private var chassisUrl: String = "ws://192.168.20.22:9090",
     private val serverSender: (String) -> Unit
 ) {
     companion object {
@@ -59,6 +59,22 @@ class ChassisProxy(
     }
 
     /**
+     * Reconnect to a new chassis URL (e.g. when the IP changes).
+     * Disconnects the existing connection first, then opens a new one.
+     */
+    fun reconnect(newUrl: String) {
+        Log.i(TAG, "Reconnecting chassis: $chassisUrl -> $newUrl")
+        chassisWs?.close(1000, "URL change")
+        chassisWs = null
+        isConnected = false
+        chassisUrl = newUrl
+        connect()
+    }
+
+    /** True if currently connected to the chassis rosbridge. */
+    val connected: Boolean get() = isConnected
+
+    /**
      * Forward a chassis_cmd payload from the server to the chassis.
      * Called when the server sends {"type": "chassis_cmd", "payload": {...}}.
      *
@@ -76,6 +92,22 @@ class ChassisProxy(
         override fun onOpen(webSocket: WebSocket, response: Response) {
             Log.i(TAG, "Chassis connected at $chassisUrl")
             isConnected = true
+
+            // Advertise for both ROS 1 and ROS 2 topic types
+            val topics = listOf("/cmd_vel", "cmd_vel")
+            val types = listOf("geometry_msgs/Twist", "geometry_msgs/msg/Twist")
+
+            for (topic in topics) {
+                for (type in types) {
+                    val advertise = JSONObject().apply {
+                        put("op", "advertise")
+                        put("topic", topic)
+                        put("type", type)
+                    }
+                    webSocket.send(advertise.toString())
+                }
+            }
+
             // Notify server that chassis is connected
             val status = JSONObject().apply {
                 put("type", "chassis_status")
@@ -85,6 +117,9 @@ class ChassisProxy(
         }
 
         override fun onMessage(webSocket: WebSocket, text: String) {
+            // Log incoming messages for diagnostics
+            Log.d(TAG, "Incoming from Chassis: $text")
+
             // Forward chassis rosbridge message to server
             try {
                 val envelope = JSONObject().apply {

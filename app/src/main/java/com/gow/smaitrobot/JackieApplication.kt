@@ -2,6 +2,7 @@ package com.gow.smaitrobot
 
 import android.app.Application
 import android.content.Context
+import android.util.Log
 import com.gow.smaitrobot.data.theme.ThemeRepository
 import com.gow.smaitrobot.data.websocket.WebSocketRepository
 import com.gow.smaitrobot.ChassisProxy
@@ -31,10 +32,13 @@ class JackieApplication : Application() {
     lateinit var ttsAudioPlayer: TtsAudioPlayer
         private set
 
-    var chassisProxy: ChassisProxy? = null
+    lateinit var chassisProxy: ChassisProxy
+        private set
 
     override fun onCreate() {
         super.onCreate()
+
+        System.loadLibrary("opencv_java4")
 
         // Build OkHttpClient with timeouts suitable for a persistent WebSocket
         val okHttpClient = OkHttpClient.Builder()
@@ -57,6 +61,23 @@ class JackieApplication : Application() {
         // loadSync() uses IO on the calling thread; acceptable in Application.onCreate()
         // since it runs before any Activity starts.
         themeRepository.loadSync("wie2026_theme.json")
+
+        // Chassis Proxy lifecycle: Start immediately so Follow Mode works offline
+        val isEmulator = android.os.Build.PRODUCT.contains("sdk") || android.os.Build.MODEL.contains("Emulator")
+        val appPrefs = getSharedPreferences("smait_settings", MODE_PRIVATE)
+        val chassisIp   = if (isEmulator) "10.0.2.2"
+                          else appPrefs.getString("chassis_ip", "192.168.20.22") ?: "192.168.20.22"
+        val chassisPort = appPrefs.getString("chassis_port", "9090") ?: "9090"
+        Log.i("JackieApplication", "Connecting to Chassis at ws://$chassisIp:$chassisPort (Emulator=$isEmulator)")
+
+        chassisProxy = ChassisProxy(
+            chassisUrl = "ws://$chassisIp:$chassisPort",
+            serverSender = { json: String ->
+                Log.v("JackieApplication", "Forwarding to Server: $json")
+                webSocketRepository.send(json)
+            }
+        )
+        chassisProxy.connect()
     }
 }
 
