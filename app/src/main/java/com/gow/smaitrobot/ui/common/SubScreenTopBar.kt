@@ -52,14 +52,14 @@ fun SubScreenTopBar(
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                     contentDescription = "Back to Home",
-                    tint = Color(0xFF1B0A6E),
+                    tint = Color(0xFF1B2838),
                     modifier = Modifier.size(32.dp)
                 )
             }
             Spacer(modifier = Modifier.width(8.dp))
             Text(
                 text = title,
-                color = Color(0xFF1B0A6E),
+                color = Color(0xFF1B2838),
                 fontSize = 32.sp,
                 fontWeight = FontWeight.Bold
             )

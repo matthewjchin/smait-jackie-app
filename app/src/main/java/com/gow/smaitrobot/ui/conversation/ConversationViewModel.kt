@@ -114,6 +114,11 @@ class ConversationViewModel(
             wsRepo.send(bytes)
         }
 
+        // Wire CaeAudioManager DOA text frames: text writer callback -> wsRepo.send(json)
+        caeAudioManager.setTextWriterCallback { json ->
+            wsRepo.send(json)
+        }
+
         // Start silence timeout
         resetSilenceTimer()
 

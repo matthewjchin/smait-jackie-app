@@ -43,9 +43,9 @@ import com.gow.smaitrobot.ui.common.SponsorBar
 import com.gow.smaitrobot.ui.common.SubScreenTopBar
 import com.gow.smaitrobot.ui.common.WieBackground
 
-private val WieNavy = Color(0xFF1B0A6E)
-private val WieTeal = Color(0xFF00A99D)
-private val WiePurple = Color(0xFF7B2D8B)
+private val ThemeDark = Color(0xFF1B2838)
+private val ThemeAccent = Color(0xFF8BC53F)
+private val ThemePrimary = Color(0xFF7B52A8)
 
 /**
  * Event Info screen — schedule, speakers, and venue info.
@@ -86,7 +86,7 @@ fun EventInfoScreen(
                     ) {
                         Text(
                             text = eventName,
-                            color = WieNavy,
+                            color = Color.White,
                             fontSize = 52.sp,
                             fontWeight = FontWeight.ExtraBold,
                             textAlign = TextAlign.Center
@@ -94,7 +94,7 @@ fun EventInfoScreen(
                         Spacer(modifier = Modifier.height(6.dp))
                         Text(
                             text = tagline,
-                            color = WieTeal,
+                            color = ThemeAccent,
                             fontSize = 36.sp,
                             fontWeight = FontWeight.SemiBold,
                             textAlign = TextAlign.Center
@@ -184,7 +184,7 @@ private fun SectionHeading(
     Text(
         text = text,
         modifier = modifier,
-        color = WieNavy,
+        color = Color.White.copy(alpha = 0.9f),
         fontSize = 48.sp,
         fontWeight = FontWeight.ExtraBold
     )
@@ -198,7 +198,7 @@ private fun EmptyState(
     Text(
         text = message,
         modifier = modifier,
-        color = WieNavy.copy(alpha = 0.5f),
+        color = Color.White.copy(alpha = 0.5f),
         fontSize = 36.sp,
         fontWeight = FontWeight.Normal
     )
@@ -225,7 +225,7 @@ private fun ScheduleCard(
         ) {
             Text(
                 text = item.time,
-                color = WieTeal,
+                color = ThemeAccent,
                 fontSize = 36.sp,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.width(180.dp)
@@ -236,7 +236,7 @@ private fun ScheduleCard(
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = item.title,
-                    color = WieNavy,
+                    color = ThemeDark,
                     fontSize = 38.sp,
                     fontWeight = FontWeight.Bold,
                     lineHeight = 44.sp
@@ -245,7 +245,7 @@ private fun ScheduleCard(
                 if (item.speaker.isNotBlank()) {
                     Text(
                         text = item.speaker,
-                        color = WiePurple,
+                        color = ThemePrimary,
                         fontSize = 32.sp,
                         modifier = Modifier.padding(top = 6.dp)
                     )
@@ -259,7 +259,7 @@ private fun ScheduleCard(
                     if (item.location.isNotBlank()) {
                         Text(
                             text = item.location,
-                            color = WieNavy.copy(alpha = 0.6f),
+                            color = ThemeDark.copy(alpha = 0.6f),
                             fontSize = 28.sp
                         )
                     }
@@ -275,8 +275,8 @@ private fun ScheduleCard(
                             },
                             modifier = Modifier.height(44.dp),
                             colors = AssistChipDefaults.assistChipColors(
-                                containerColor = WieTeal.copy(alpha = 0.15f),
-                                labelColor = WieTeal
+                                containerColor = ThemeAccent.copy(alpha = 0.15f),
+                                labelColor = ThemeAccent
                             )
                         )
                     }
@@ -309,12 +309,12 @@ private fun SpeakerCard(
                 modifier = Modifier
                     .size(90.dp)
                     .clip(CircleShape)
-                    .background(WiePurple.copy(alpha = 0.15f)),
+                    .background(ThemePrimary.copy(alpha = 0.15f)),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
                     text = speaker.name.take(1).uppercase(),
-                    color = WiePurple,
+                    color = ThemePrimary,
                     fontSize = 42.sp,
                     fontWeight = FontWeight.Bold
                 )
@@ -325,7 +325,7 @@ private fun SpeakerCard(
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = speaker.name,
-                    color = WieNavy,
+                    color = ThemeDark,
                     fontSize = 36.sp,
                     fontWeight = FontWeight.Bold,
                     maxLines = 2,
@@ -335,7 +335,7 @@ private fun SpeakerCard(
                 if (speaker.title.isNotBlank()) {
                     Text(
                         text = speaker.title,
-                        color = WieTeal,
+                        color = ThemeAccent,
                         fontSize = 28.sp,
                         maxLines = 3,
                         overflow = TextOverflow.Ellipsis,
@@ -346,7 +346,7 @@ private fun SpeakerCard(
                 if (speaker.bio.isNotBlank()) {
                     Text(
                         text = speaker.bio,
-                        color = WieNavy.copy(alpha = 0.6f),
+                        color = ThemeDark.copy(alpha = 0.6f),
                         fontSize = 24.sp,
                         maxLines = 3,
                         overflow = TextOverflow.Ellipsis,
@@ -378,15 +378,21 @@ private fun VenueInfoCard(modifier: Modifier = Modifier) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(
                     text = "San Jose State University",
-                    color = WieNavy,
+                    color = ThemeDark,
                     fontSize = 40.sp,
                     fontWeight = FontWeight.Bold
                 )
                 Text(
-                    text = "Student Union",
-                    color = WieTeal,
+                    text = "Diaz Compean Student Union",
+                    color = ThemeAccent,
                     fontSize = 34.sp,
                     fontWeight = FontWeight.Medium
+                )
+                Text(
+                    text = "Ballroom & Studio Room 1",
+                    color = ThemePrimary,
+                    fontSize = 28.sp,
+                    fontWeight = FontWeight.Normal
                 )
             }
         }

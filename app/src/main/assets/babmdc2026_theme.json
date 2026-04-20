@@ -1,0 +1,341 @@
+{
+  "eventName": "BABMDC 2026",
+  "tagline": "Intelligent, Inclusive and Responsible Innovation in Healthcare",
+  "logoAsset": "babmdc_logo.png",
+  "colors": {
+    "primary": "#376137",
+    "secondary": "#6EC26E",
+    "tertiary": "#1A3D1A",
+    "background": "#F0F5F0",
+    "onPrimary": "#FFFFFF",
+    "onBackground": "#1A2E1A",
+    "surface": "#FFFFFF",
+    "onSurface": "#1A2E1A"
+  },
+  "fonts": {
+    "bodyFont": "Roboto",
+    "headingFont": "Roboto"
+  },
+  "cards": [
+    {
+      "label": "Ask Me Anything",
+      "action": "navigate:chat",
+      "icon": "chat",
+      "description": "Chat with Jackie about the conference, sessions, or biomedical devices"
+    },
+    {
+      "label": "Photo Booth",
+      "action": "navigate:photobooth",
+      "icon": "camera",
+      "description": "Take a selfie with Jackie the robot!"
+    },
+    {
+      "label": "Schedule",
+      "action": "navigate:eventinfo",
+      "icon": "schedule",
+      "description": "Full conference schedule, speakers, and poster session"
+    },
+    {
+      "label": "Event Website",
+      "action": "url:https://www.biomedicalconference.org/",
+      "icon": "web",
+      "description": "Visit the BABMDC 2026 conference website"
+    }
+  ],
+  "sponsors": [
+    {
+      "name": "Shockwave Medical (J&J MedTech)",
+      "logoAsset": "sponsor_shockwave.png",
+      "tier": "platinum"
+    },
+    {
+      "name": "SteriTek",
+      "logoAsset": "sponsor_steritek.png",
+      "tier": "platinum"
+    },
+    {
+      "name": "IEEE Electronics Packaging Society",
+      "logoAsset": "sponsor_ieee_eps.png",
+      "tier": "silver"
+    },
+    {
+      "name": "EAG Laboratories",
+      "logoAsset": "sponsor_eag.png",
+      "tier": "sponsor"
+    },
+    {
+      "name": "Jabil",
+      "logoAsset": "sponsor_jabil.png",
+      "tier": "sponsor"
+    },
+    {
+      "name": "Airgas",
+      "logoAsset": "sponsor_airgas.png",
+      "tier": "sponsor"
+    },
+    {
+      "name": "Westpak",
+      "logoAsset": "sponsor_westpak.png",
+      "tier": "sponsor"
+    },
+    {
+      "name": "David Schnur Associates",
+      "logoAsset": "sponsor_dsa.png",
+      "tier": "sponsor"
+    },
+    {
+      "name": "APOMed Consultants",
+      "logoAsset": "sponsor_apomed.png",
+      "tier": "sponsor"
+    },
+    {
+      "name": "Master of Translational Medicine",
+      "logoAsset": "sponsor_mtm.png",
+      "tier": "sponsor"
+    }
+  ],
+  "schedule": [
+    {
+      "time": "7:45 AM",
+      "title": "Registration & Breakfast",
+      "speaker": "",
+      "location": "Student Union Lobby",
+      "track": "general"
+    },
+    {
+      "time": "8:30 AM",
+      "title": "Conference Opening",
+      "speaker": "",
+      "location": "Ballroom",
+      "track": "general"
+    },
+    {
+      "time": "8:35 AM",
+      "title": "Welcome",
+      "speaker": "",
+      "location": "Ballroom",
+      "track": "general"
+    },
+    {
+      "time": "8:40 AM",
+      "title": "Opportunities and Challenges for Critical Care Clinical Decision Support",
+      "speaker": "Dr. Yao Sun, Professor of Pediatrics, UCSF",
+      "location": "Ballroom",
+      "track": "plenary"
+    },
+    {
+      "time": "9:20 AM",
+      "title": "Startup Pitches",
+      "speaker": "",
+      "location": "Ballroom",
+      "track": "general"
+    },
+    {
+      "time": "10:00 AM",
+      "title": "Break I",
+      "speaker": "",
+      "location": "",
+      "track": "general"
+    },
+    {
+      "time": "10:30 AM",
+      "title": "From Concept to Clinic: Building the Evidence That Brings Devices to Patients",
+      "speaker": "Dr. Janie Mandrusov, T45 Labs",
+      "location": "Ballroom",
+      "track": "session1"
+    },
+    {
+      "time": "10:30 AM",
+      "title": "Learning to Dance while the Steps Change: How to Launch Engineering Careers in Times of Rapid Technical Innovation",
+      "speaker": "Dr. Kate Stephenson, Founder, Dyad Engineering",
+      "location": "Ballroom",
+      "track": "session1"
+    },
+    {
+      "time": "10:30 AM",
+      "title": "What It Means to be a Leader in Medical Devices in 2026",
+      "speaker": "Scott Nierotka, Medical Device Executive",
+      "location": "Ballroom",
+      "track": "session1"
+    },
+    {
+      "time": "10:30 AM",
+      "title": "From Lab to Market: Practical IP and Governance for Connected Devices",
+      "speaker": "Soody Tronson, Managing Counsel, STLG Law Firm",
+      "location": "Studio Room 1",
+      "track": "session2"
+    },
+    {
+      "time": "10:30 AM",
+      "title": "Building Healthcare Software That Matters: Integrating Technology, Regulation, and Science",
+      "speaker": "Alma Lopez, Senior Technical Product Manager, Roche",
+      "location": "Studio Room 1",
+      "track": "session2"
+    },
+    {
+      "time": "11:30 AM",
+      "title": "Poster Competition",
+      "speaker": "",
+      "location": "Ballroom",
+      "track": "general"
+    },
+    {
+      "time": "12:00 PM",
+      "title": "Lunch",
+      "speaker": "",
+      "location": "",
+      "track": "general"
+    },
+    {
+      "time": "1:20 PM",
+      "title": "Plenary Speaker II",
+      "speaker": "Andre Lindkvist, Abbott Diabetes Care",
+      "location": "Ballroom",
+      "track": "plenary"
+    },
+    {
+      "time": "2:00 PM",
+      "title": "The Usability Gap: Aligning Breast Pump Innovation with Human Reality",
+      "speaker": "Cassi Janakos, COO & Co-founder, Healthy Horizons",
+      "location": "Ballroom",
+      "track": "session3"
+    },
+    {
+      "time": "2:00 PM",
+      "title": "Driving Diagnostics: Velocity versus Validation in the Age of AI",
+      "speaker": "Dr. Priya Balachandran, Atzeyo Biosensors",
+      "location": "Ballroom",
+      "track": "session3"
+    },
+    {
+      "time": "2:00 PM",
+      "title": "Hormonal Regulation of Heart Muscle Proliferation and Regeneration",
+      "speaker": "Dr. Alexander Payumo, Associate Professor, SJSU",
+      "location": "Studio Room 1",
+      "track": "session4"
+    },
+    {
+      "time": "2:00 PM",
+      "title": "Deep Brain Stimulation for Neuropsychiatric Disorders: Adaptive Devices to New Indications",
+      "speaker": "Dr. Kristin Sellers, Assistant Professor, UCSF",
+      "location": "Studio Room 1",
+      "track": "session4"
+    },
+    {
+      "time": "2:00 PM",
+      "title": "Bioadaptive Coronary Angioplasty: Clinical Rationale, Mechanistic Insights, and Contemporary Outcomes",
+      "speaker": "Dr. Onur Dur, VP Clinical Science, Elixir Medical",
+      "location": "Studio Room 1",
+      "track": "session4"
+    },
+    {
+      "time": "3:00 PM",
+      "title": "Break II",
+      "speaker": "",
+      "location": "",
+      "track": "general"
+    },
+    {
+      "time": "3:30 PM",
+      "title": "Industry Panel",
+      "speaker": "",
+      "location": "Ballroom",
+      "track": "panel"
+    },
+    {
+      "time": "4:15 PM",
+      "title": "Alumni Panel",
+      "speaker": "",
+      "location": "Ballroom",
+      "track": "panel"
+    },
+    {
+      "time": "5:00 PM",
+      "title": "Poster Competition Awards & Closing",
+      "speaker": "",
+      "location": "Ballroom",
+      "track": "general"
+    },
+    {
+      "time": "5:15 PM",
+      "title": "Reception",
+      "speaker": "",
+      "location": "",
+      "track": "general"
+    }
+  ],
+  "speakers": [
+    {
+      "name": "Dr. Yao Sun",
+      "title": "Professor of Pediatrics (Neonatology), UCSF",
+      "bio": "Director of Neonatology Community Services. Stanford undergrad, UCLA med school, MIT PhD in Computer Science. Research in clinical decision support for neonatal critical care.",
+      "photoAsset": "speaker_sun.jpg"
+    },
+    {
+      "name": "Andre Lindkvist",
+      "title": "Abbott Diabetes Care",
+      "bio": "Plenary speaker from Abbott Diabetes Care.",
+      "photoAsset": "speaker_lindkvist.jpg"
+    },
+    {
+      "name": "Dr. Kate Stephenson",
+      "title": "Founder, Dyad Engineering; VP Engineering, Cern Corporation",
+      "bio": "25+ years in med tech. Stanford MS & PhD in Engineering. Specializes in translating medical technologies from concept to regulated products, especially women's health.",
+      "photoAsset": "speaker_stephenson.jpg"
+    },
+    {
+      "name": "Dr. Janie Mandrusov",
+      "title": "T45 Labs",
+      "bio": "25+ years in cardiovascular technology with 16 patents. PhD Chemical Engineering from Columbia. SJSU BME Advisory Council member.",
+      "photoAsset": "speaker_mandrusov.jpg"
+    },
+    {
+      "name": "Scott Nierotka",
+      "title": "Medical Device Executive",
+      "bio": "25+ years in medical devices. Most recently Director of Engineering at Lumenous Device Technologies. Founding member and former President of BMES industry chapter.",
+      "photoAsset": "speaker_nierotka.jpg"
+    },
+    {
+      "name": "Soody Tronson",
+      "title": "Managing Counsel, STLG Law Firm",
+      "bio": "25+ years at the intersection of law, technology, and business. Former R&D engineer at HP and Schering-Plough. Patent prosecution and IP strategy.",
+      "photoAsset": "speaker_tronson.jpg"
+    },
+    {
+      "name": "Alma Lopez",
+      "title": "Senior Technical Product Manager (Healthcare & AI), Roche",
+      "bio": "Builds AI-enabled and cloud-based healthcare solutions. Cross-functional global teams in regulated environments.",
+      "photoAsset": "speaker_lopez.jpg"
+    },
+    {
+      "name": "Cassi Janakos",
+      "title": "COO & Co-founder, Healthy Horizons",
+      "bio": "Inc. Female Founders 500 (2025). Stevie Award for Social Change Maker of the Year. Advocates for human-centered medical device design.",
+      "photoAsset": "speaker_janakos.jpg"
+    },
+    {
+      "name": "Dr. Priya Balachandran",
+      "title": "Atzeyo Biosensors",
+      "bio": "25+ years in deep tech and life sciences. CEO of Huddl Health, Chief Product Officer at Atzeyo Biosensors. Former Thermo Fisher.",
+      "photoAsset": "speaker_balachandran.jpg"
+    },
+    {
+      "name": "Dr. Alexander Payumo",
+      "title": "Associate Professor, Biological Sciences, SJSU",
+      "bio": "BS Chemistry from SJSU, PhD Stanford. Research in hormonal regulation of cardiomyocyte cell cycle for mammalian heart regeneration.",
+      "photoAsset": "speaker_payumo.jpg"
+    },
+    {
+      "name": "Dr. Kristin Sellers",
+      "title": "Assistant Professor, Neurological Surgery, UCSF",
+      "bio": "Research in intracranial electrical stimulation for neuropsychiatric disorders. Closed-loop neuromodulation clinical trials.",
+      "photoAsset": "speaker_sellers.jpg"
+    },
+    {
+      "name": "Dr. Onur Dur",
+      "title": "VP Clinical Science and Medical Affairs, Elixir Medical",
+      "bio": "15+ years in med-tech. 50+ peer-reviewed publications, 20+ patents. Focus on cardiovascular care and Class II/III devices.",
+      "photoAsset": "speaker_dur.jpg"
+    }
+  ]
+}

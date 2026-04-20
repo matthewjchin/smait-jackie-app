@@ -1,0 +1,126 @@
+{
+  "eventName": "HFES Western Regional Meeting",
+  "tagline": "San Jose, CA — April 17, 2026",
+  "logoAsset": "hfes_banner.png",
+  "appMode": "hfes_event",
+  "colors": {
+    "primary": "#1B2838",
+    "secondary": "#8BC53F",
+    "tertiary": "#7B52A8",
+    "background": "#EEEDF3",
+    "onPrimary": "#FFFFFF",
+    "onBackground": "#1B2838",
+    "surface": "#FFFFFF",
+    "onSurface": "#1B2838"
+  },
+  "fonts": {
+    "bodyFont": "Roboto",
+    "headingFont": "Roboto"
+  },
+  "cards": [
+    {
+      "label": "Ask Me Anything",
+      "action": "navigate:chat",
+      "icon": "chat",
+      "description": "Chat with Jackie about the conference, sessions, or directions"
+    },
+    {
+      "label": "Photo Booth",
+      "action": "navigate:photobooth",
+      "icon": "camera",
+      "description": "Take a selfie with Jackie the robot!"
+    },
+    {
+      "label": "Schedule",
+      "action": "navigate:eventinfo",
+      "icon": "schedule",
+      "description": "Full conference schedule and sessions"
+    },
+    {
+      "label": "Event Website",
+      "action": "url:https://www.hfes.org/Events/Regional-Meetings/Western-Region/San-Jose",
+      "icon": "web",
+      "description": "Visit the HFES Western Regional Meeting website"
+    }
+  ],
+  "sponsors": [
+    {
+      "name": "Fieldwork",
+      "logoAsset": "sponsor_fieldwork.png"
+    },
+    {
+      "name": "San José State University",
+      "logoAsset": "sponsor_sjsu.png"
+    },
+    {
+      "name": "SJSU Research Foundation",
+      "logoAsset": "sponsor_sjsu_rf.png"
+    }
+  ],
+  "schedule": [
+    {
+      "time": "8:15 AM",
+      "title": "Venue Open & Registration",
+      "speaker": "",
+      "location": "Student Union Ballroom C",
+      "track": "general"
+    },
+    {
+      "time": "9:00 AM",
+      "title": "Networking Session",
+      "speaker": "",
+      "location": "Student Union Ballroom C",
+      "track": "general"
+    },
+    {
+      "time": "10:00 AM",
+      "title": "Keynote: HFE & Cognitive Systems Engineering",
+      "speaker": "Dr. Emily M. Roth",
+      "location": "Student Union Ballroom C",
+      "track": "keynote"
+    },
+    {
+      "time": "10:15 AM",
+      "title": "Student Presentations",
+      "speaker": "Breeya Bly (CSUF, BioPower AI), Olga Krasnostora (CSUF, Queue Par AI)",
+      "location": "Student Union Ballroom C",
+      "track": "session"
+    },
+    {
+      "time": "11:00 AM",
+      "title": "Opening Panel",
+      "speaker": "Google, LEET",
+      "location": "Student Union Ballroom C",
+      "track": "panel"
+    },
+    {
+      "time": "12:00 PM",
+      "title": "Lunch Break",
+      "speaker": "",
+      "location": "Student Union",
+      "track": "general"
+    },
+    {
+      "time": "1:00 PM",
+      "title": "Afternoon Presentations",
+      "speaker": "Christa Markadaki (Geometric), Silvia Martinez",
+      "location": "Student Union Ballroom C",
+      "track": "session"
+    },
+    {
+      "time": "3:00 PM",
+      "title": "Closing Remarks",
+      "speaker": "",
+      "location": "Student Union Ballroom C",
+      "track": "general"
+    }
+  ],
+  "speakers": [
+    {
+      "name": "Dr. Emily M. Roth",
+      "title": "Keynote Speaker — HFE & Cognitive Systems Engineering",
+      "bio": "Expert in human factors engineering and cognitive systems engineering.",
+      "photoAsset": ""
+    }
+  ]
+}

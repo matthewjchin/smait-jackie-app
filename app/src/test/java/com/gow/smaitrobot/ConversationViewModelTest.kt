@@ -199,6 +199,22 @@ class ConversationViewModelTest {
         assertTrue(bytesCaptor.firstValue.contentEquals(testBytes))
     }
 
+    // Test 10b: CaeAudioManager text writer callback calls wsRepo.send(json) for DOA frames
+    @Test
+    fun `CaeAudioManager text writer callback calls wsRepo send json`() = testScope.runTest {
+        val vm = createViewModel()
+
+        val captor = argumentCaptor<(String) -> Unit>()
+        verify(caeAudio).setTextWriterCallback(captor.capture())
+
+        val doaJson = """{"type":"doa","angle":45,"beam":2}"""
+        captor.firstValue.invoke(doaJson)
+
+        val jsonCaptor = argumentCaptor<String>()
+        verify(wsRepo).send(jsonCaptor.capture())
+        assertEquals(doaJson, jsonCaptor.firstValue)
+    }
+
     // Test 11: After survey dismissed, UiEvent.NavigateTo(Home) is emitted
     @Test
     fun `dismissSurvey emits NavigateTo Home`() = testScope.runTest {

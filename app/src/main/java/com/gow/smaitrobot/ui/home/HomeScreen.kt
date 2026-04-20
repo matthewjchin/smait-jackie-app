@@ -63,18 +63,18 @@ import com.gow.smaitrobot.ui.common.SponsorBar
 import com.gow.smaitrobot.ui.common.TopLogoBar
 import com.gow.smaitrobot.ui.common.WieBackground
 
-// WiE slide colors
-private val WieNavy = Color(0xFF1B0A6E)
-private val WieTeal = Color(0xFF00A99D)
-private val CardPurple = Color(0xFF2D1B69)
-private val CardTeal = Color(0xFF007C87)
+// HFES event colors (navy + purple palette)
+private val EventDark = Color(0xFF1B2838)
+private val EventAccent = Color(0xFF8BC53F)
+private val CardPrimary = Color(0xFF2D1B69)
+private val CardSecondary = Color(0xFF4A3278)
 
 /**
  * Home screen — the primary landing screen on Jackie's kiosk display.
  *
  * Layout:
- * 1. Top: Logo bar (SJSU | WiE | BioRob) — long press opens hidden Settings
- * 2. Middle: WiE conference graphic (left) + 4 cards in 2x2 grid (right)
+ * 1. Top: Logo bar (HFES | Banner | SJSU) — long press opens hidden Settings
+ * 2. Middle: Event conference graphic (left) + 4 cards in 2x2 grid (right)
  * 3. Bottom: Sponsor bar
  */
 @OptIn(ExperimentalFoundationApi::class)
@@ -96,93 +96,111 @@ fun HomeScreen(
         Column(
             modifier = Modifier.fillMaxSize()
         ) {
-            // 1. Top logo bar — long press to open hidden Settings
-            TopLogoBar(
-                modifier = Modifier.combinedClickable(
-                    onClick = {},
-                    onLongClick = {
-                        navController.navigate(Screen.Settings) {
-                            launchSingleTop = true
-                        }
-                    }
-                )
-            )
-
-            // 2. Main content: WiE graphic (left) + cards (right)
+            // 1. Top row: BioRob (left) | HFES banner (center, flush top) | SJSU (right)
             Row(
                 modifier = Modifier
-                    .weight(1f)
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 8.dp),
-                verticalAlignment = Alignment.CenterVertically
+                    .combinedClickable(
+                        onClick = {},
+                        onLongClick = {
+                            navController.navigate(Screen.Settings) {
+                                launchSingleTop = true
+                            }
+                        }
+                    )
+                    .padding(horizontal = 8.dp),
+                verticalAlignment = Alignment.Top
             ) {
-                // Left: WiE conference graphic
+                // BioRob Lab logo (left) — same height as SJSU, top-aligned with banner
                 Image(
-                    painter = painterResource(id = R.drawable.wie_conference_graphic),
-                    contentDescription = "WiE Conference — Engineering Beyond Imagination",
+                    painter = painterResource(id = R.drawable.biorob_logo),
+                    contentDescription = "BioRob Lab",
                     modifier = Modifier
-                        .weight(0.38f)
-                        .fillMaxHeight()
-                        .padding(8.dp),
+                        .height(220.dp)
+                        .padding(start = 24.dp, top = 24.dp),
                     contentScale = ContentScale.Fit
                 )
 
-                Spacer(modifier = Modifier.width(12.dp))
-
-                // Right: 2x2 card grid — each row gets equal vertical space
-                Column(
+                // HFES banner (center) — flush to the very top
+                Box(
                     modifier = Modifier
-                        .weight(0.62f)
-                        .fillMaxHeight(),
-                    verticalArrangement = Arrangement.spacedBy(10.dp, Alignment.CenterVertically)
+                        .weight(1f),
+                    contentAlignment = Alignment.TopCenter
                 ) {
-                    // Top row
-                    Row(
-                        modifier = Modifier
-                            .weight(1f)
-                            .fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(10.dp)
-                    ) {
-                        cards.getOrNull(0)?.let { card ->
-                            HomeCard(
-                                card = card,
-                                cardIndex = 0,
-                                onClick = { handleCardClick(card, viewModel, navController) { inlineContentKey = it } },
-                                modifier = Modifier.weight(1f).fillMaxHeight()
-                            )
-                        }
-                        cards.getOrNull(1)?.let { card ->
-                            HomeCard(
-                                card = card,
-                                cardIndex = 1,
-                                onClick = { handleCardClick(card, viewModel, navController) { inlineContentKey = it } },
-                                modifier = Modifier.weight(1f).fillMaxHeight()
-                            )
-                        }
+                    Image(
+                        painter = painterResource(id = R.drawable.hfes_banner),
+                        contentDescription = "HFES Western Regional Meeting",
+                        modifier = Modifier.fillMaxWidth(),
+                        contentScale = ContentScale.Fit
+                    )
+                }
+
+                // SJSU ME logo (right) — same height as BioRob
+                Image(
+                    painter = painterResource(id = R.drawable.sjsu_logo),
+                    contentDescription = "SJSU Mechanical Engineering",
+                    modifier = Modifier
+                        .height(220.dp)
+                        .padding(end = 24.dp, top = 24.dp),
+                    contentScale = ContentScale.Fit
+                )
+            }
+
+            // 2. Cards — centered 2x2 grid, double spread
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth(0.80f)
+                    .align(Alignment.CenterHorizontally)
+                    .padding(vertical = 4.dp),
+                verticalArrangement = Arrangement.spacedBy(32.dp, Alignment.CenterVertically)
+            ) {
+                // Top row
+                Row(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(32.dp)
+                ) {
+                    cards.getOrNull(0)?.let { card ->
+                        HomeCard(
+                            card = card,
+                            cardIndex = 0,
+                            onClick = { handleCardClick(card, viewModel, navController) { inlineContentKey = it } },
+                            modifier = Modifier.weight(1f).fillMaxHeight()
+                        )
                     }
-                    // Bottom row
-                    Row(
-                        modifier = Modifier
-                            .weight(1f)
-                            .fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(10.dp)
-                    ) {
-                        cards.getOrNull(2)?.let { card ->
-                            HomeCard(
-                                card = card,
-                                cardIndex = 2,
-                                onClick = { handleCardClick(card, viewModel, navController) { inlineContentKey = it } },
-                                modifier = Modifier.weight(1f).fillMaxHeight()
-                            )
-                        }
-                        cards.getOrNull(3)?.let { card ->
-                            HomeCard(
-                                card = card,
-                                cardIndex = 3,
-                                onClick = { handleCardClick(card, viewModel, navController) { inlineContentKey = it } },
-                                modifier = Modifier.weight(1f).fillMaxHeight()
-                            )
-                        }
+                    cards.getOrNull(1)?.let { card ->
+                        HomeCard(
+                            card = card,
+                            cardIndex = 1,
+                            onClick = { handleCardClick(card, viewModel, navController) { inlineContentKey = it } },
+                            modifier = Modifier.weight(1f).fillMaxHeight()
+                        )
+                    }
+                }
+                // Bottom row
+                Row(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(32.dp)
+                ) {
+                    cards.getOrNull(2)?.let { card ->
+                        HomeCard(
+                            card = card,
+                            cardIndex = 2,
+                            onClick = { handleCardClick(card, viewModel, navController) { inlineContentKey = it } },
+                            modifier = Modifier.weight(1f).fillMaxHeight()
+                        )
+                    }
+                    cards.getOrNull(3)?.let { card ->
+                        HomeCard(
+                            card = card,
+                            cardIndex = 3,
+                            onClick = { handleCardClick(card, viewModel, navController) { inlineContentKey = it } },
+                            modifier = Modifier.weight(1f).fillMaxHeight()
+                        )
                     }
                     // Third row — Follow Me (full width)
                     Row(
@@ -203,7 +221,7 @@ fun HomeScreen(
                 }
             }
 
-            // 4. Sponsor bar
+            // 3. Sponsor bar
             SponsorBar(sponsors = sponsors)
         }
     }
@@ -244,7 +262,7 @@ private fun handleCardClick(
 }
 
 /**
- * Home screen card — WiE-themed with alternating purple/teal.
+ * Home screen card — event-themed with alternating green tones.
  */
 @Composable
 private fun HomeCard(
@@ -255,22 +273,22 @@ private fun HomeCard(
 ) {
     // Alternating: purple, teal, teal, purple — diagonal pattern
     val cardColor = if (cardIndex == 0 || cardIndex == 3) {
-        CardPurple.copy(alpha = 0.85f)
+        CardPrimary.copy(alpha = 0.85f)
     } else {
-        CardTeal.copy(alpha = 0.85f)
+        CardSecondary.copy(alpha = 0.85f)
     }
 
     Card(
         onClick = onClick,
-        modifier = modifier.padding(2.dp),
-        shape = RoundedCornerShape(18.dp),
+        modifier = modifier.padding(4.dp),
+        shape = RoundedCornerShape(14.dp),
         colors = CardDefaults.cardColors(containerColor = cardColor),
         elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(20.dp),
+                .padding(6.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
@@ -278,28 +296,26 @@ private fun HomeCard(
                 imageVector = cardIcon(card.icon),
                 contentDescription = card.label,
                 tint = Color.White.copy(alpha = 0.9f),
-                modifier = Modifier.size(60.dp)
+                modifier = Modifier.size(56.dp)
             )
-            Spacer(modifier = Modifier.height(8.dp))
             Text(
                 text = card.label,
                 color = Color.White,
-                fontSize = 42.sp,
+                fontSize = 74.sp,
                 fontWeight = FontWeight.Bold,
                 textAlign = TextAlign.Center,
                 maxLines = 2,
-                lineHeight = 46.sp
+                lineHeight = 78.sp
             )
             if (card.description.isNotBlank()) {
-                Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = card.description,
                     color = Color.White.copy(alpha = 0.7f),
-                    fontSize = 22.sp,
+                    fontSize = 42.sp,
                     textAlign = TextAlign.Center,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
-                    lineHeight = 26.sp
+                    lineHeight = 46.sp
                 )
             }
         }
@@ -332,7 +348,7 @@ private fun KeynoteDialog(
                 text = "Keynote Speakers",
                 fontSize = 36.sp,
                 fontWeight = FontWeight.ExtraBold,
-                color = WieNavy
+                color = EventDark
             )
         },
         text = {
@@ -343,7 +359,7 @@ private fun KeynoteDialog(
                     Text(
                         text = "Speaker details coming soon.",
                         fontSize = 26.sp,
-                        color = WieNavy.copy(alpha = 0.6f)
+                        color = EventDark.copy(alpha = 0.6f)
                     )
                 } else {
                     speakers.forEach { speaker ->
@@ -353,14 +369,14 @@ private fun KeynoteDialog(
                                 modifier = Modifier
                                     .size(64.dp)
                                     .clip(CircleShape)
-                                    .background(CardTeal.copy(alpha = 0.2f)),
+                                    .background(CardSecondary.copy(alpha = 0.2f)),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Text(
                                     text = speaker.name.take(1),
                                     fontSize = 32.sp,
                                     fontWeight = FontWeight.Bold,
-                                    color = CardTeal
+                                    color = CardSecondary
                                 )
                             }
                             Spacer(modifier = Modifier.width(16.dp))
@@ -369,18 +385,18 @@ private fun KeynoteDialog(
                                     text = speaker.name,
                                     fontSize = 28.sp,
                                     fontWeight = FontWeight.Bold,
-                                    color = WieNavy
+                                    color = EventDark
                                 )
                                 Text(
                                     text = speaker.title,
                                     fontSize = 22.sp,
-                                    color = WieTeal
+                                    color = EventAccent
                                 )
                                 if (speaker.bio.isNotBlank()) {
                                     Text(
                                         text = speaker.bio,
                                         fontSize = 20.sp,
-                                        color = WieNavy.copy(alpha = 0.6f),
+                                        color = EventDark.copy(alpha = 0.6f),
                                         modifier = Modifier.padding(top = 4.dp)
                                     )
                                 }
@@ -392,7 +408,7 @@ private fun KeynoteDialog(
         },
         confirmButton = {
             TextButton(onClick = onDismiss) {
-                Text("Close", fontSize = 26.sp, color = WieTeal)
+                Text("Close", fontSize = 26.sp, color = EventAccent)
             }
         }
     )

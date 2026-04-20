@@ -56,6 +56,30 @@ class VideoStreamManager(private val wsRepo: WebSocketRepository) {
     private var sessionRetryCount = 0
     private val mainHandler = Handler(Looper.getMainLooper())
 
+    // One-shot callback set by [snapshotNextFrame]. The next JPEG produced by
+    // the live stream's image listener is delivered to this callback (in
+    // addition to being sent as a normal 0x02 video frame), then the callback
+    // is cleared. Used by the Photo Booth flow to avoid opening a second
+    // Camera2 session — the USB camera on Jackie only allows one owner.
+    @Volatile
+    private var pendingSnapshot: ((ByteArray) -> Unit)? = null
+
+    /**
+     * Request a one-shot snapshot from the live video stream.
+     *
+     * The next JPEG frame encoded by the imageListener will be delivered to
+     * [callback] (on an internal camera handler thread). The frame is also
+     * sent as a normal 0x02 video frame so the server-side pipeline is
+     * uninterrupted.
+     *
+     * If [start] has not been called, or the camera isn't actively producing
+     * frames, the callback will never fire — the caller is responsible for
+     * its own timeout / error UI.
+     */
+    fun snapshotNextFrame(callback: (ByteArray) -> Unit) {
+        pendingSnapshot = callback
+    }
+
     /**
      * Opens the camera and starts continuous JPEG frame capture.
      * Prefers LENS_FACING_EXTERNAL (Jackie's USB camera), falls back to LENS_FACING_FRONT.
@@ -235,17 +259,36 @@ class VideoStreamManager(private val wsRepo: WebSocketRepository) {
         val image: Image = reader.acquireLatestImage() ?: return@OnImageAvailableListener
         try {
             val now = System.currentTimeMillis()
-            if (now - lastFrameSentMs < MIN_FRAME_INTERVAL_MS) return@OnImageAvailableListener
+            val snapshot = pendingSnapshot
+            // Honour the fps throttle for the normal live stream, but bypass
+            // it when a photo-booth snapshot has been requested so the user
+            // doesn't wait for the throttle window to elapse.
+            if (snapshot == null && now - lastFrameSentMs < MIN_FRAME_INTERVAL_MS) {
+                return@OnImageAvailableListener
+            }
 
             val jpegBytes = yuv420ToJpeg(image) ?: return@OnImageAvailableListener
 
-            // Prepend 0x02 type byte and send
+            // Prepend 0x02 type byte and send to the server's live pipeline
             val frame = ByteArray(1 + jpegBytes.size)
             frame[0] = VIDEO_FRAME_TYPE
             System.arraycopy(jpegBytes, 0, frame, 1, jpegBytes.size)
             wsRepo.send(frame)
 
             lastFrameSentMs = now
+
+            // Deliver the same JPEG bytes to any waiting photo-booth snapshot
+            // callback, then clear the slot so future frames go back to the
+            // live stream only. Callback runs on the camera handler thread —
+            // receivers must not block.
+            if (snapshot != null) {
+                pendingSnapshot = null
+                try {
+                    snapshot(jpegBytes)
+                } catch (e: Exception) {
+                    Log.w(TAG, "Snapshot callback raised", e)
+                }
+            }
         } catch (e: Exception) {
             Log.w(TAG, "Frame encode/send error", e)
         } finally {

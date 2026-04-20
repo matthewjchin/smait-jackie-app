@@ -38,8 +38,8 @@ import androidx.navigation.NavHostController
 import com.gow.smaitrobot.ui.common.SubScreenTopBar
 import com.gow.smaitrobot.ui.common.WieBackground
 
-private val WieNavy = Color(0xFF1B0A6E)
-private val WieTeal = Color(0xFF00A99D)
+private val WieNavy = Color(0xFF1B2838)
+private val WieTeal = Color(0xFF8BC53F)
 
 /**
  * Navigation Map screen with WiE gradient background.

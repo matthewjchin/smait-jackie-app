@@ -1,5 +1,6 @@
 <resources>
     <string name="app_name">Chin-SMAIT-Jackie</string>
+<!--     <string name="app_name">Jackie Event</string> -->
     <string name="jackie_title">Jackie</string>
     <string name="approach_message">Step up and say hi!</string>
     <string name="powered_by">BioRob Lab  ·  SJSU</string>

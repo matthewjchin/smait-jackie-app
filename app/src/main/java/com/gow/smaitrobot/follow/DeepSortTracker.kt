@@ -8,7 +8,7 @@ import android.graphics.Rect
  * Manages KalmanTrack lifecycle: predict → match (Hungarian) → update/spawn/prune.
  * Returns only confirmed tracks (3+ consecutive hits).
  *
- * Ported from Jason's RobotController.java DeepSortTracker.
+ * Ported from the original Android RobotController DeepSortTracker.
  */
 class DeepSortTracker {
 

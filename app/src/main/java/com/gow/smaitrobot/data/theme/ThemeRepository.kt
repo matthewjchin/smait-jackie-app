@@ -18,7 +18,7 @@ import kotlinx.coroutines.withContext
  * Usage:
  * ```kotlin
  * val repo = ThemeRepository(context)
- * repo.load("wie2026_theme.json")
+ * repo.load("babmdc2026_theme.json")
  * val config = repo.config.value
  * ```
  *
@@ -40,9 +40,9 @@ class ThemeRepository(private val context: Context) {
      *
      * Must be called from a coroutine; performs I/O on [Dispatchers.IO].
      *
-     * @param assetFileName  Filename in `app/src/main/assets/` (e.g. "wie2026_theme.json").
+     * @param assetFileName  Filename in `app/src/main/assets/` (e.g. "babmdc2026_theme.json").
      */
-    suspend fun load(assetFileName: String = "wie2026_theme.json") {
+    suspend fun load(assetFileName: String = "babmdc2026_theme.json") {
         val loaded = withContext(Dispatchers.IO) {
             try {
                 context.assets.open(assetFileName).use { stream ->
@@ -63,7 +63,7 @@ class ThemeRepository(private val context: Context) {
      * Synchronous variant for use from non-coroutine callers (e.g. tests or Application.onCreate).
      * Falls back to [ThemeConfig.default()] on any failure.
      */
-    fun loadSync(assetFileName: String = "wie2026_theme.json") {
+    fun loadSync(assetFileName: String = "babmdc2026_theme.json") {
         _config.value = try {
             context.assets.open(assetFileName).use { stream ->
                 val json = stream.bufferedReader().readText()
