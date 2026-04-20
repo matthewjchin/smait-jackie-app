@@ -3,7 +3,7 @@ package com.gow.smaitrobot.data.model
 import com.google.gson.annotations.SerializedName
 
 /**
- * Root theme configuration loaded from a JSON asset file (e.g. wie2026_theme.json).
+ * Root theme configuration loaded from a JSON asset file (e.g. babmdc2026_theme.json).
  *
  * All fields have defaults so that a minimal JSON (or an empty JSON) will never
  * cause a NullPointerException. Gson populates fields present in the JSON and
@@ -37,7 +37,10 @@ data class ThemeConfig(
     val schedule: List<ScheduleItem> = emptyList(),
 
     @SerializedName("speakers")
-    val speakers: List<SpeakerInfo> = emptyList()
+    val speakers: List<SpeakerInfo> = emptyList(),
+
+    @SerializedName("appMode")
+    val appMode: String = ""
 ) {
     companion object {
         /**

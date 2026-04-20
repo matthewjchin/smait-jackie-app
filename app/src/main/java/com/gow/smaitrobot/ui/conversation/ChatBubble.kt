@@ -24,9 +24,10 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-private val WieNavy = Color(0xFF1B0A6E)
-private val WieTeal = Color(0xFF00A99D)
-private val WiePurple = Color(0xFF7B2D8B)
+// HFES 2026 theme
+private val BabmdcGreen = Color(0xFF9C7BDB)
+private val BabmdcDarkGreen = Color(0xFF2D1B69)
+private val UserBlue = Color(0xFF1565C0)
 
 /**
  * Pure logic object for ChatBubble alignment decisions.
@@ -47,12 +48,12 @@ fun ChatBubble(message: ChatMessage) {
     val isUser = message.isUser
     val arrangement = if (isUser) Arrangement.End else Arrangement.Start
     val bubbleColor = if (isUser) {
-        WieTeal.copy(alpha = 0.15f)
+        BabmdcGreen
     } else {
         Color.White.copy(alpha = 0.85f)
     }
-    val textColor = WieNavy
-    val labelColor = if (isUser) WieTeal else WiePurple
+    val textColor = if (isUser) Color.White else Color(0xFF1A1A2E)
+    val labelColor = if (isUser) Color.White.copy(alpha = 0.85f) else BabmdcDarkGreen
 
     val shape = if (isUser) {
         RoundedCornerShape(20.dp, 20.dp, 4.dp, 20.dp)

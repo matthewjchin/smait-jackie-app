@@ -139,7 +139,7 @@ fun ConversationScreen(
                                         Text(
                                             "Say something to start the conversation",
                                             fontSize = 32.sp,
-                                            color = Color(0xFF1B0A6E).copy(alpha = 0.5f)
+                                            color = Color(0xFF1B2838).copy(alpha = 0.5f)
                                         )
                                     }
                                 }

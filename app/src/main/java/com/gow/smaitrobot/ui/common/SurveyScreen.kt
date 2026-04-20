@@ -50,14 +50,14 @@ import com.gow.smaitrobot.ui.conversation.SurveyBuilder
 import kotlinx.coroutines.delay
 import java.util.UUID
 
-private val DeepPurple = Color(0xFF1B0A6E)
-private val Gold = Color(0xFFFFD700)
-private val LightPurple = Color(0xFF3D2B9E)
+private val DeepPurple = Color(0xFF2D1B69)  // HFES deep purple
+private val Gold = Color(0xFF8BC53F)
+private val LightPurple = Color(0xFF7B52A8) // HFES purple accent
 private val SurfaceWhite = Color(0xFFFAFAFA)
 private val SubtleGray = Color(0xFF888888)
 
 /**
- * Full-screen post-interaction survey overlay for WiE 2026 data collection.
+ * Full-screen post-interaction survey overlay for event data collection.
  *
  * Collects 5 items (star rating + 4 Likert questions) plus an optional comment.
  * Auto-dismisses after 20 seconds with a visible countdown timer.

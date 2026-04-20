@@ -3,10 +3,6 @@ package com.gow.smaitrobot.ui.theme
 /**
  * BioRob Lab brand color constants as #RRGGBB hex strings.
  *
- * Derived from the BioRob Lab logo:
- * - Blue: the "Rob" text blue
- * - Gold: the circuit-node accent
- *
  * These are compile-time constants for use in tests, previews, and hardcoded
  * fallbacks. At runtime the [ThemeRepository] loads from the JSON asset.
  */

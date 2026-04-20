@@ -281,24 +281,32 @@ class CaeAudioManager(private val context: Context) {
             // Default -1 = "wait for wake word" which blocks onAudio callback (Pitfall 1).
             com.iflytek.iflyos.cae.CAE.CAESetRealBeam(0)
 
-            // Kill audioserver to release the ALSA device — it auto-restarts
-            // but by then we already hold the lock
+            // Kill whatever process holds the ALSA capture device.
+            // On Jackie this is audio.service (iFLYTEK vendor), NOT stock audioserver.
+            // Use lsof to find the actual holder rather than grepping by name.
             try {
-                val process = Runtime.getRuntime().exec(arrayOf("su", "0", "sh", "-c",
-                    "for p in /proc/[0-9]*/cmdline; do " +
-                            "if tr '\\0' ' ' < \$p 2>/dev/null | grep -q audioserver; then " +
-                            "kill \$(echo \$p | grep -o '[0-9]*'); fi; done"
+                val lsof = Runtime.getRuntime().exec(arrayOf("su", "0", "sh", "-c",
+                    "lsof /dev/snd/pcmC${PCM_CARD}D${PCM_DEVICE}c 2>/dev/null | tail -n +2 | awk '{print \$2}'"
                 ))
-                process.waitFor()
-                Thread.sleep(500)
-                Log.i(TAG, "Killed audioserver to release ALSA device")
+                val pids = lsof.inputStream.bufferedReader().readText().trim()
+                lsof.waitFor()
+                if (pids.isNotEmpty()) {
+                    for (pid in pids.lines()) {
+                        Runtime.getRuntime().exec(arrayOf("su", "0", "kill", pid)).waitFor()
+                        Log.i(TAG, "Killed ALSA holder PID $pid")
+                    }
+                    Thread.sleep(500)
+                } else {
+                    Log.i(TAG, "No process holding ALSA capture device")
+                }
             } catch (e: Exception) {
-                Log.w(TAG, "Could not kill audioserver: ${e.message}")
+                Log.w(TAG, "Could not release ALSA device: ${e.message}")
             }
 
             // Auto-fix ALSA permissions (resets on reboot, no adb needed)
             try {
-                Runtime.getRuntime().exec("chmod 666 /dev/snd/pcmC${PCM_CARD}D${PCM_DEVICE}c").waitFor()
+                Runtime.getRuntime().exec(arrayOf("su", "0", "chmod", "666",
+                    "/dev/snd/pcmC${PCM_CARD}D${PCM_DEVICE}c")).waitFor()
                 Log.i(TAG, "ALSA permissions set for pcmC${PCM_CARD}D${PCM_DEVICE}c")
             } catch (e: Exception) {
                 Log.w(TAG, "Could not set ALSA permissions (non-fatal): ${e.message}")

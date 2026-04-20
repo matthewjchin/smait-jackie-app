@@ -17,8 +17,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.gow.smaitrobot.CaeAudioManager
 import com.gow.smaitrobot.ChassisProxy
-import com.gow.smaitrobot.StandardAudioManager
-import com.gow.smaitrobot.ui.conversation.VideoStreamManager
+// StandardAudioManager removed — Jackie-only build
+import com.gow.smaitrobot.TtsAudioPlayer
 import com.gow.smaitrobot.data.model.ThemeConfig
 import com.gow.smaitrobot.data.websocket.WebSocketRepository
 import com.gow.smaitrobot.follow.FollowController
@@ -44,15 +44,16 @@ fun AppScaffold(
     themeConfig: ThemeConfig
 ) {
     val context = LocalContext.current
-    val lifecycleOwner = LocalLifecycleOwner.current
-    val isEmulator = android.os.Build.PRODUCT.contains("sdk") || android.os.Build.MODEL.contains("Emulator")
+    val wsRepo = context.jackieApp.webSocketRepository
+    val themeRepo = context.jackieApp.themeRepository
+    // Jackie-only build — no emulator detection needed
 
     // Core Repositories + Managers
     val wsRepo = remember { context.jackieApp.webSocketRepository }
     val themeRepo = remember { context.jackieApp.themeRepository }
     val ttsPlayer = remember { context.jackieApp.ttsAudioPlayer }
     val caeAudioManager = remember { CaeAudioManager(context) }
-    val standardAudioManager = remember { if (isEmulator) StandardAudioManager() else null }
+    // No StandardAudioManager — Jackie uses CaeAudioManager only
     val videoStreamManager = remember { VideoStreamManager(wsRepo) }
     val homeViewModel = remember { HomeViewModel(themeRepo) }
     val conversationViewModel = remember {
@@ -90,21 +91,35 @@ fun AppScaffold(
     val isConnected by wsRepo.isConnected.collectAsStateWithLifecycle()
     LaunchedEffect(isConnected) {
         if (isConnected) {
-            if (isEmulator) {
-                standardAudioManager?.setWriterCallback { bytes -> wsRepo.send(bytes) }
-                standardAudioManager?.start()
-                Log.i(TAG, "Started StandardAudioManager for emulator")
-            } else {
-                // Jackie: copy CAE assets and start beamformed audio
-                caeAudioManager.copyAssetsIfNeeded()
-                val ws = wsRepo.currentWebSocket
-                if (ws != null) {
-                    caeAudioManager.start(ws)
-                    Log.i(TAG, "Started CaeAudioManager for Jackie")
-                } else {
-                    Log.w(TAG, "WebSocket connected but currentWebSocket is null")
-                }
+            // Tell server which event app is connected — server injects event context into LLM
+            val appMode = context.jackieApp.themeRepository.config.value.appMode
+            if (appMode.isNotEmpty()) {
+                wsRepo.send(org.json.JSONObject().apply {
+                    put("type", "app_mode")
+                    put("mode", appMode)
+                }.toString())
+                Log.i(TAG, "Sent app_mode: $appMode")
             }
+
+            // Jackie: copy CAE assets and start beamformed audio
+            caeAudioManager.copyAssetsIfNeeded()
+            val ws = wsRepo.currentWebSocket
+            if (ws != null) {
+                caeAudioManager.start(ws)
+                Log.i(TAG, "Started CaeAudioManager for Jackie")
+            } else {
+                Log.w(TAG, "WebSocket connected but currentWebSocket is null")
+            }
+
+            // Start chassis proxy — bridges server ↔ chassis (192.168.20.22:9090)
+            val proxy = ChassisProxy(
+                chassisUrl = "ws://192.168.20.22:9090",
+                serverSender = { json: String -> wsRepo.send(json) }
+            )
+            proxy.connect()
+            context.jackieApp.chassisProxy = proxy
+            wsRepo.chassisProxy = proxy
+            Log.i(TAG, "Started ChassisProxy")
             videoStreamManager.start(context)
             Log.i(TAG, "Started VideoStreamManager")
         }
@@ -113,7 +128,6 @@ fun AppScaffold(
     // Cleanup on dispose
     DisposableEffect(Unit) {
         onDispose {
-            standardAudioManager?.stop()
             caeAudioManager.stop()
             videoStreamManager.stop()
             wsRepo.disconnect()
@@ -139,10 +153,10 @@ fun AppScaffold(
                 navController = navController
             )
         }
-        composable<Screen.Follow> {
-            FollowScreen(
-                followController = followController,
-                navController = navController
+        composable<Screen.PhotoBooth> {
+            PhotoBoothScreen(
+                navController = navController,
+                wsRepo = wsRepo,
             )
         }
         composable<Screen.Settings> {
@@ -150,5 +164,9 @@ fun AppScaffold(
                 navController = navController
             )
         }
+        composable<Screen.Follow> {
+            FollowScreen(followController = followController, navController = navController)
+        }
     }
 }
+

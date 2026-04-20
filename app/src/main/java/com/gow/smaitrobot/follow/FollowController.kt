@@ -27,6 +27,20 @@ import org.opencv.imgproc.Imgproc
 
 /**
  * Person-following robot controller using MediaPipe face detection + DeepSORT tracking.
+ *
+ * Runs entirely on-device (no server needed). Uses the existing ChassisProxy
+ * to send cmd_vel commands to Jackie's chassis via rosbridge.
+ *
+ * Behaviours (FSM):
+ * - FOLLOW:    Face detected within range -> track with PID
+ * - SCAN:      No face / out of range -> rotate 45 deg CCW, retry
+ * - OBSTACLE:  Obstacle ahead -> rotate 90 deg CW, resume
+ * - COLLISION: Object < 0.1m -> stop 3s, rotate 45 deg CW
+ *
+ * Ported from the original Android RobotController, integrated with Jackie app architecture.
+ *
+ * @param chassisSender Callback to send rosbridge JSON through ChassisProxy.
+ *                      Expects a cmd_vel Twist JSON string.
  */
 class FollowController(
     private val chassisSender: (String) -> Unit
@@ -387,10 +401,7 @@ class FollowController(
 
         val msg = JSONObject().apply {
             put("op", "publish")
-            put("id", "app_${now}") // Added ID for rosbridge
-            put("topic", "/cmd_vel")
-            // Run this if the "/cmd_vel" does not work
-            put("topic", "/mobile_base/commands/velocity")  // instead of "/cmd_vel"
+            put("topic", "/cmd_vel_mux/input/navi_override")
             put("msg", JSONObject().apply {
                 put("linear", JSONObject().apply { put("x", outX.toDouble()); put("y", 0.0); put("z", 0.0) })
                 put("angular", JSONObject().apply { put("x", 0.0); put("y", 0.0); put("z", outZ.toDouble()) })
